@@ -22,6 +22,7 @@ namespace TestResultCoordinator.Controllers
         public TestOperationResultController(ITestOperationResultStorage storage)
         {
             this.storage = Preconditions.CheckNotNull(storage);
+            Logger.LogInformation($"Found storage. Storage set to: {storage.GetStoreFromSource("loadGen1.send").ToString()}");
         }
 
         // POST api/TestOperationResult

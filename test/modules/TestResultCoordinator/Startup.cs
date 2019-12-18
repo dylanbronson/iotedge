@@ -48,10 +48,8 @@ namespace TestResultCoordinator
                 Logger.LogError(ex, "Error creating RocksDB store. Falling back to in-memory store.");
                 storeProvider = new StoreProvider(new InMemoryDbStoreProvider());
             }
-
-            services.AddSingleton<ITestOperationResultStorage>(await TestOperationResultStorage.Create(
-                storeProvider,
-                Settings.Current.ResultSources));
+            ITestOperationResultStorage storage = await TestOperationResultStorage.Create(storeProvider, Settings.Current.ResultSources);
+            services.AddSingleton(storage);
             services.AddHostedService<TestResultReportingService>();
             services.AddHostedService<TestResultEventReceivingService>();
         }
