@@ -188,7 +188,7 @@
               }
             },
             "settings": {
-              "image": "<Container_Registry>/microsoft/azureiotedge-test-result-coordinator:<Build.BuildNumber>-linux-<Architecture>",
+              "image": "<Container_Registry>/microsoft/azureiotedge-test-result-coordinator:<Buildrd.BuildNumber>-linux-<Architecture>",
               "createOptions": "{\"HostConfig\": {\"PortBindings\": {\"5001/tcp\": [{\"HostPort\": \"5001\"}]}}}"
             }
           },
