@@ -5,17 +5,15 @@ namespace TestResultCoordinator.Controllers
     using System.Net;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Azure.Devices.Edge.ModuleUtil;
     using Microsoft.Azure.Devices.Edge.Util;
     using Microsoft.Extensions.Logging;
     using TestResultCoordinator.Storage;
-    using TestOperationResult = TestResultCoordinator.TestOperationResult;
 
     [Route("api/[controller]")]
     [ApiController]
     public class TestOperationResultController : Controller
     {
-        static readonly ILogger Logger = ModuleUtil.CreateLogger(nameof(TestOperationResultController));
+        static readonly ILogger Logger = Microsoft.Azure.Devices.Edge.ModuleUtil.ModuleUtil.CreateLogger(nameof(TestOperationResultController));
 
         readonly ITestOperationResultStorage storage;
 

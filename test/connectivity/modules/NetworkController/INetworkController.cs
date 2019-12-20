@@ -1,15 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 namespace NetworkController
 {
+    using ModuleUtil.networkcontrollerreuslt;
     using System.Threading;
     using System.Threading.Tasks;
 
     interface INetworkController
     {
-        string Description { get; }
+        NetworkStatus NetworkStatus { get; }
 
-        Task<bool> SetStatusAsync(NetworkStatus status, CancellationToken cs);
+        Task<bool> SetEnabledAsync(bool enabled, CancellationToken cs);
 
-        Task<NetworkStatus> GetStatusAsync(CancellationToken cs);
+        Task<bool> GetEnabledAsync(CancellationToken cs);
     }
 }

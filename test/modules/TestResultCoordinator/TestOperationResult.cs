@@ -3,6 +3,7 @@ namespace TestResultCoordinator
 {
     using System;
     using Microsoft.Azure.Devices.Edge.Util;
+    using Newtonsoft.Json;
 
     public class TestOperationResult
     {
@@ -25,5 +26,8 @@ namespace TestResultCoordinator
         public string Result { get; }
 
         public DateTime CreatedAt { get; }
+
+        [JsonIgnore]
+        public bool NetworkOn { get; set; }
     }
 }
