@@ -33,7 +33,7 @@ namespace NetworkController
                     cs);
 
                 // parse output to see if online or offline
-                return (!output.Contains("qdisc noqueue"));
+                return !output.Contains("qdisc noqueue");
             }
             catch (Exception e)
             {

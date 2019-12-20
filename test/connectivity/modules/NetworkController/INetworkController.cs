@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 namespace NetworkController
 {
-    using ModuleUtil.networkcontrollerreuslt;
     using System.Threading;
     using System.Threading.Tasks;
+    using ModuleUtil.networkcontrollerreuslt;
 
     interface INetworkController
     {
