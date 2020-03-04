@@ -115,6 +115,23 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Routing
             if (!deviceProxy.HasValue)
             {
                 Events.UnableToSendC2DMessageNoDeviceConnection(id);
+                if (message.SystemProperties.TryGetValue(SystemProperties.LockToken, out string lockToken))
+                {
+                    Events.PrintString($"lock token: {lockToken}");
+                }
+                else
+                {
+                    Events.PrintString("no lock token found");
+                }
+
+                if (message.SystemProperties.TryGetValue(SystemProperties.SequenceNumber, out string sequenceNumber))
+                {
+                    Events.PrintString($"sequence number for message is: {sequenceNumber}");
+                }
+                else
+                {
+                    Events.PrintString("No sequence number found");
+                }
             }
 
             return deviceProxy.ForEachAsync(d => d.SendC2DMessageAsync(message));
@@ -201,7 +218,13 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Routing
                 MessageReceived = 1501,
                 ReportedPropertiesUpdateReceived = 1502,
                 DesiredPropertiesUpdateReceived = 1503,
-                DeviceConnectionNotFound
+                DeviceConnectionNotFound,
+                Printing
+            }
+
+            public static void PrintString(string printMe)
+            {
+                Log.LogDebug((int)EventIds.Printing, printMe);
             }
 
             public static void MethodCallReceived(string fromId, string toId, string correlationId)
