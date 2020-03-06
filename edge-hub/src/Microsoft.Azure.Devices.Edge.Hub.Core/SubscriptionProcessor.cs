@@ -116,6 +116,13 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
             try
             {
                 IEnumerable<IIdentity> connectedClients = this.ConnectionManager.GetConnectedClients().ToList();
+                Events.DebugPrint("dylanbronson find me!");
+                Events.DebugPrint("Printing connectedClient identities");
+                foreach (IIdentity identity in connectedClients)
+                {
+                    Events.DebugPrint($"Identity of connectedClient: {identity.Id}");
+                }
+
                 foreach (IIdentity identity in connectedClients)
                 {
                     try
@@ -215,7 +222,13 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
                 ProcessingSubscriptions,
                 ProcessingSubscription,
                 ClientConnectedProcessingSubscriptions,
-                ProcessingSubscriptionsNoCloudProxy
+                ProcessingSubscriptionsNoCloudProxy,
+                DebugPrint
+            }
+
+            public static void DebugPrint(string printMe)
+            {
+                Log.LogDebug((int)EventIds.DebugPrint, printMe);
             }
 
             public static void ErrorProcessingSubscriptions(Exception ex, IIdentity identity)

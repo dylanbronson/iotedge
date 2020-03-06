@@ -41,6 +41,10 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
             this.isConnected.Set(false);
             this.deviceConnectivityManager.DeviceConnected -= this.HandleDeviceConnectedEvent;
             this.deviceConnectivityManager.DeviceDisconnected -= this.HandleDeviceDisconnectedEvent;
+            Events.DebugPrint("dylanbronson find me!");
+            Events.DebugPrint($"Operation name: CloseAsync");
+            Events.DebugPrint($"identity Id: {this.identity.Id}");
+            Events.DebugPrint($"isConnected value: {this.isConnected}");
         }
 
         // This method could throw and is not a reliable candidate to check connectivity status
@@ -61,6 +65,10 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
             await this.InvokeFunc(() => this.underlyingClient.OpenAsync(), nameof(this.OpenAsync));
             this.deviceConnectivityManager.DeviceConnected += this.HandleDeviceConnectedEvent;
             this.deviceConnectivityManager.DeviceDisconnected += this.HandleDeviceDisconnectedEvent;
+            Events.DebugPrint("dylanbronson find me!");
+            Events.DebugPrint($"Operation name: OpenAsync");
+            Events.DebugPrint($"identity Id: {this.identity.Id}");
+            Events.DebugPrint($"isConnected value: {this.isConnected}");
         }
 
         public Task SendEventAsync(Message message) => this.InvokeFunc(() => this.underlyingClient.SendEventAsync(message), nameof(this.SendEventAsync));
@@ -95,6 +103,10 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
             this.deviceConnectivityManager.DeviceDisconnected -= this.HandleDeviceDisconnectedEvent;
             this.isConnected.Set(false);
             this.underlyingClient?.Dispose();
+            Events.DebugPrint("dylanbronson find me!");
+            Events.DebugPrint($"Operation name: Dispose");
+            Events.DebugPrint($"identity Id: {this.identity.Id}");
+            Events.DebugPrint($"isConnected value: {this.isConnected}");
         }
 
         void HandleDeviceConnectedEvent(object sender, EventArgs eventArgs) => this.HandleDeviceConnectedEvent();
@@ -199,7 +211,13 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
                 OperationTimedOut,
                 OperationFailed,
                 OperationSucceeded,
-                ChangingStatus
+                ChangingStatus,
+                DebugPrint
+            }
+
+            public static void DebugPrint(string printMe)
+            {
+                Log.LogDebug((int)EventIds.DebugPrint, printMe);
             }
 
             public static void ReceivedDeviceSdkCallback(IIdentity identity, ConnectionStatus status, ConnectionStatusChangeReason reason)
