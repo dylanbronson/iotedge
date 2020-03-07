@@ -71,6 +71,10 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
             {
                 Events.ErrorProcessingSubscription(id, deviceSubscription, addSubscription, ex);
             }
+
+            Events.DebugPrint("dylanbronson find me!");
+            Events.DebugPrint("Operation Name: ProcessSubscriptionWithRetry");
+            Events.DebugPrint($"Subscription has been processed for ID: {id} and deviceSubscription: {deviceSubscription}.");
         }
 
         async Task ProcessSubscription(string id, Option<ICloudProxy> cloudProxy, DeviceSubscription deviceSubscription, bool addSubscription)
@@ -115,8 +119,9 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
             Events.DeviceConnectedProcessingSubscriptions();
             try
             {
-                IEnumerable<IIdentity> connectedClients = this.ConnectionManager.GetConnectedClients().ToList();
+                IEnumerable<IIdentity> connectedClients = this.ConnectionManager.GetConnectedClients().ToArray();
                 Events.DebugPrint("dylanbronson find me!");
+                Events.DebugPrint("Before foreach loop");
                 Events.DebugPrint("Printing connectedClient identities");
                 foreach (IIdentity identity in connectedClients)
                 {
@@ -134,6 +139,13 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
                     {
                         Events.ErrorProcessingSubscriptions(e, identity);
                     }
+                }
+
+                foreach (IIdentity identity in connectedClients)
+                {
+                    Events.DebugPrint($"dylanbronson find me!");
+                    Events.DebugPrint("After foreach loop");
+                    Events.DebugPrint($"Identity of connectedClient: {identity.Id}");
                 }
             }
             catch (Exception e)
