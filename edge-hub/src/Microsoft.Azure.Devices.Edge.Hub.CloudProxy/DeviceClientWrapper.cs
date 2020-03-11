@@ -8,11 +8,13 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
     using Microsoft.Azure.Devices.Edge.Util;
     using Microsoft.Azure.Devices.Edge.Util.Concurrency;
     using Microsoft.Azure.Devices.Shared;
+    using Microsoft.Extensions.Logging;
 
     class DeviceClientWrapper : IClient
     {
         readonly DeviceClient underlyingDeviceClient;
         readonly AtomicBoolean isActive;
+        static readonly ILogger Log = Logger.Factory.CreateLogger<DeviceClientWrapper>();
 
         public DeviceClientWrapper(DeviceClient deviceClient)
         {
@@ -48,10 +50,13 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
         {
             try
             {
+                Log.LogDebug("dylanbronson - DeviceClientWrapper - trying OpenAsync");
                 await this.underlyingDeviceClient.OpenAsync();
+                Log.LogDebug("dylanbronson - DeviceClientWrapper - finished OpenAsync");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Log.LogDebug($"dylanbronson - DeviceClientWrapper - caught exception while calling openAsync. Exception message: {ex}");
                 this.isActive.Set(false);
                 this.underlyingDeviceClient?.Dispose();
                 throw;
