@@ -72,13 +72,12 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
                 Events.ErrorProcessingSubscription(id, deviceSubscription, addSubscription, ex);
             }
 
-            Events.DebugPrint("dylanbronson find me!");
-            Events.DebugPrint("Operation Name: ProcessSubscriptionWithRetry");
-            Events.DebugPrint($"Subscription has been processed for ID: {id} and deviceSubscription: {deviceSubscription}.");
+            Events.DebugPrint($"dylanbronson - finished ProcessSubscriptionWithRetry for {id}");
         }
 
         async Task ProcessSubscription(string id, Option<ICloudProxy> cloudProxy, DeviceSubscription deviceSubscription, bool addSubscription)
         {
+            Events.DebugPrint($"dylanbronson - ProcessSubscription inner method for {id} with subscription: {deviceSubscription.ToString()}");
             switch (deviceSubscription)
             {
                 case DeviceSubscription.C2D:
@@ -112,6 +111,8 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
                     // No Action required
                     break;
             }
+
+            Events.DebugPrint($"dylanbronson - finished  ProcessSubscription inner method for {id} with subscription: {deviceSubscription.ToString()}");
         }
 
         async void CloudConnectivityEstablished(object sender, EventArgs eventArgs)
@@ -123,6 +124,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
                 {
                     Events.ProcessingSubscriptionsOnDeviceConnected(identity);
                     await this.ProcessExistingSubscriptions(identity.Id);
+                    Events.DebugPrint($"dylanbronson - finished ProcessExistingSubscription for: {identity.Id}");
                 }
                 catch (Exception e)
                 {
@@ -177,7 +179,9 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
                 {
                     foreach (KeyValuePair<DeviceSubscription, bool> subscription in s)
                     {
+                        Events.DebugPrint($"About to processSubscriptionWithRetry for {id}");
                         await this.ProcessSubscriptionWithRetry(id, cloudProxy, subscription.Key, subscription.Value);
+                        Events.DebugPrint($"Finished ProcessSubscriptionWithRetry for {id}");
                     }
                 });
         }
