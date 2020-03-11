@@ -89,6 +89,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
         public async Task<Option<ICloudProxy>> GetCloudConnection(string id)
         {
             Try<ICloudProxy> cloudProxyTry = await this.TryGetCloudConnection(id);
+            Events.DebugPrint($"dylanbronson - finished TryGetCloudConnection with success: {cloudProxyTry.Success}");
             return cloudProxyTry
                 .Ok()
                 .Map(c => (ICloudProxy)new RetryingCloudProxy(id, () => this.TryGetCloudConnection(id), c));
@@ -96,6 +97,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
 
         async Task<Try<ICloudProxy>> TryGetCloudConnection(string id)
         {
+            Events.DebugPrint("dylanbronson - trying TryGetCloudConnection");
             IIdentity identity = this.identityProvider.Create(Preconditions.CheckNonWhiteSpace(id, nameof(id)));
             ConnectedDevice device = this.GetOrCreateConnectedDevice(identity);
 
@@ -476,6 +478,11 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
                 HandlingConnectionStatusChangedHandler,
                 CloudConnectionLostClosingClient,
                 CloudConnectionLostClosingAllClients
+            }
+
+            public static void DebugPrint(string printMe)
+            {
+                Log.LogDebug(printMe);
             }
 
             public static void NewCloudConnection(IIdentity identity, Try<ICloudConnection> cloudConnection)

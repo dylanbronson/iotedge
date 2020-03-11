@@ -172,8 +172,11 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
 
         async Task ProcessExistingSubscriptions(string id)
         {
+            Events.DebugPrint("dylanbronson - ProcessExistingSubscriptions");
             Option<ICloudProxy> cloudProxy = await this.ConnectionManager.GetCloudConnection(id);
+            Events.DebugPrint($"dylanbronson - finished getting cloud connection with cloudProxy hasValue: {cloudProxy.HasValue}");
             Option<IReadOnlyDictionary<DeviceSubscription, bool>> subscriptions = this.ConnectionManager.GetSubscriptions(id);
+            Events.DebugPrint("dylanbronson - finished GetSubscriptions");
             await subscriptions.ForEachAsync(
                 async s =>
                 {
