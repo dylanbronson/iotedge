@@ -117,35 +117,36 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
         async void CloudConnectivityEstablished(object sender, EventArgs eventArgs)
         {
             Events.DeviceConnectedProcessingSubscriptions();
+            async Task ProcessIdentity(IIdentity identity)
+            {
+                try
+                {
+                    Events.ProcessingSubscriptionsOnDeviceConnected(identity);
+                    await this.ProcessExistingSubscriptions(identity.Id);
+                }
+                catch (Exception e)
+                {
+                    Events.ErrorProcessingSubscriptions(e, identity);
+                }
+            }
+
             try
             {
-                IEnumerable<IIdentity> connectedClients = this.ConnectionManager.GetConnectedClients().ToArray();
-                Events.DebugPrint("dylanbronson find me!");
-                Events.DebugPrint("Before foreach loop");
-                Events.DebugPrint("Printing connectedClient identities");
-                foreach (IIdentity identity in connectedClients)
+                IList<IIdentity> connectedClients = this.ConnectionManager.GetConnectedClients().ToList();
+                Events.DebugPrint($"dylanbronson");
+                Events.DebugPrint($"Printing connectedClients before processing");
+                foreach (var client in connectedClients)
                 {
-                    Events.DebugPrint($"Identity of connectedClient: {identity.Id}");
+                    Events.DebugPrint($"connectedClient: {client}");
                 }
 
-                foreach (IIdentity identity in connectedClients)
+                IEnumerable<Task> tasks = connectedClients.Select(id => ProcessIdentity(id));
+                await Task.WhenAll(tasks);
+                Events.DebugPrint($"dylanbronson");
+                Events.DebugPrint($"Printing connectedClients after processing");
+                foreach (var client in connectedClients)
                 {
-                    try
-                    {
-                        Events.ProcessingSubscriptionsOnDeviceConnected(identity);
-                        await this.ProcessExistingSubscriptions(identity.Id);
-                    }
-                    catch (Exception e)
-                    {
-                        Events.ErrorProcessingSubscriptions(e, identity);
-                    }
-                }
-
-                foreach (IIdentity identity in connectedClients)
-                {
-                    Events.DebugPrint($"dylanbronson find me!");
-                    Events.DebugPrint("After foreach loop");
-                    Events.DebugPrint($"Identity of connectedClient: {identity.Id}");
+                    Events.DebugPrint($"connectedClient: {client}");
                 }
             }
             catch (Exception e)

@@ -110,6 +110,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Routing
         {
             Preconditions.CheckNonWhiteSpace(id, nameof(id));
             Preconditions.CheckNotNull(message, nameof(message));
+            Events.PrintString("dylanbronson - SendC2DMessageAsync");
 
             Option<IDeviceProxy> deviceProxy = this.connectionManager.GetDeviceConnection(id);
             if (!deviceProxy.HasValue)
