@@ -123,6 +123,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
                 client.SetProductInfo(this.productInfo);
             }
 
+            Events.DebugPrint($"dylanbronson - Opening async for {this.Identity.Id}");
             await client.OpenAsync();
             Events.CreateDeviceClientSuccess(this.transportSettingsList, this.operationTimeout, this.Identity);
             return client;
@@ -159,6 +160,11 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
             {
                 AttemptingTransport = IdStart,
                 TransportConnected
+            }
+
+            public static void DebugPrint(string printMe)
+            {
+                Log.LogDebug(printMe);
             }
 
             public static void AttemptingConnectionWithTransport(ITransportSettings[] transportSettings, IIdentity identity)

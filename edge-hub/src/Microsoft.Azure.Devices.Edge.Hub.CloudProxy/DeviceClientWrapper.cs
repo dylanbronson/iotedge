@@ -50,9 +50,10 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
         {
             try
             {
-                Log.LogDebug("dylanbronson - DeviceClientWrapper - trying OpenAsync");
-                await this.underlyingDeviceClient.OpenAsync();
-                Log.LogDebug("dylanbronson - DeviceClientWrapper - finished OpenAsync");
+                Guid guid = Guid.NewGuid();
+                Log.LogDebug($"dylanbronson - DeviceClientWrapper - trying OpenAsync with guid: {guid}");
+                await this.underlyingDeviceClient.OpenAsync().TimeoutAfter(TimeSpan.FromMilliseconds(this.underlyingDeviceClient.OperationTimeoutInMilliseconds));
+                Log.LogDebug($"dylanbronson - DeviceClientWrapper - finished OpenAsync with guid: {guid}");
             }
             catch (Exception ex)
             {

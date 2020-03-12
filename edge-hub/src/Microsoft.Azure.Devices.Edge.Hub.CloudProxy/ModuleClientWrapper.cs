@@ -54,13 +54,10 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
         {
             try
             {
-                Log.LogDebug("dylanbronson - DeviceClientWrapper - trying OpenAsync");
                 await this.underlyingModuleClient.OpenAsync();
-                Log.LogDebug("dylanbronson - DeviceClientWrapper - finished OpenAsync");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Log.LogDebug($"dylanbronson - DeviceClientWrapper - caught exception while calling openAsync. Exception message: {ex}");
                 this.isActive.Set(false);
                 this.underlyingModuleClient?.Dispose();
                 throw;
