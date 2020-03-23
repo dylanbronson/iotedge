@@ -58,6 +58,7 @@ namespace LoadGen
                     }
 
                     messageIdCounter++;
+                    await Task.Delay(TimeSpan.FromSeconds(1));
                 }
                 catch (Exception ex)
                 {
