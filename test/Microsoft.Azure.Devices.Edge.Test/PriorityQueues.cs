@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
                            ("logAnalyticsSharedKey", "Unnecessary value for e2e test"),
                            ("logAnalyticsLogType", "Unnecessary"),
                            ("testStartDelay", "00:00:00"),
-                           ("testDuration", "00:01:30"),
+                           ("testDuration", "00:02:00"),
                            ("verificationDelay", "00:00:10"),
                            ("STORAGE_ACCOUNT_CONNECTION_STRING", "Unnecessary value for e2e test"),
                            ("NetworkControllerRunProfile", "Online"),
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
                             ("testResultCoordinatorUrl", trcUrl),
                             ("senderType", "PriorityMessageSender"),
                             ("trackingId", "e2eTestTrackingId"),
-                            ("testDuration", "00:00:10")
+                            ("testDuration", "00:00:30")
                         });
 
                     builder.GetModule(ModuleName.EdgeHub)
