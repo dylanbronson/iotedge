@@ -65,13 +65,13 @@ namespace LoadGen
                 }
             }
 
-            this.Logger.LogInformation("Sending finished. Now sending expected results to TRC");
+            this.Logger.LogInformation($"Sending finished. Now sending expected results to {Settings.Current.TestResultCoordinatorUrl}");
 
             // Sort by priority then sequence number. Then, select just the sequence numbers
-            List<int> expectedSequenceNumberList = priorityAndSequenceList
+            List<long> expectedSequenceNumberList = priorityAndSequenceList
                 .OrderBy(t => t.Item1)
                 .ThenBy(t => t.Item2)
-                .Select(t => t.Item1)
+                .Select(t => t.Item2)
                 .ToList();
 
             await this.ReportResult(1);
