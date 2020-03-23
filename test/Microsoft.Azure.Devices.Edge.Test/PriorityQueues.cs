@@ -49,8 +49,8 @@ namespace Microsoft.Azure.Devices.Edge.Test
         {
             CancellationToken token = this.TestToken;
             string trcImage = Context.Current.TestResultCoordinatorImage.Expect(() => new ArgumentException("testResultCoordinatorImage parameter is required for Priority Queues test"));
-            string loadGenImage = Context.Current.TestResultCoordinatorImage.Expect(() => new ArgumentException("loadGenImage parameter is required for TempFilter test"));
-            string relayerImage = Context.Current.TestResultCoordinatorImage.Expect(() => new ArgumentException("relayerImage parameter is required for TempFilter test"));
+            string loadGenImage = Context.Current.LoadGenImage.Expect(() => new ArgumentException("loadGenImage parameter is required for TempFilter test"));
+            string relayerImage = Context.Current.RelayerImage.Expect(() => new ArgumentException("relayerImage parameter is required for TempFilter test"));
 
             const string trcModuleName = "testResultCoordinator";
             const string loadGenModuleName = "loadGenModule";
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
                            ("testDuration", "00:01:00"),
                            ("verificationDelay", "00:00:10"),
                            ("STORAGE_ACCOUNT_CONNECTION_STRING", "Unnecessary value for e2e test"),
-                           ("NetworkControllerRunProfile", "unnecessary"),
+                           ("NetworkControllerRunProfile", "Online"),
                            ("TEST_INFO", "garbage value")
                        })
 
