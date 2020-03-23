@@ -68,8 +68,9 @@ namespace Microsoft.Azure.Devices.Edge.Test
                            ("IOT_HUB_CONNECTION_STRING", "HostName=dybronso-iot-hub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=g8BRuiPbFRLEttMsncI6aHUw21Jjr+AEb/Yf4brYD7Y="),
                            ("logAnalyticsWorkspaceId", "Unnecessary value for e2e test"),
                            ("logAnalyticsSharedKey", "Unnecessary value for e2e test"),
+                           ("logAnalyticsLogType", "Unnecessary"),
                            ("testStartDelay", "00:00:00"),
-                           ("testDuration", "01:00:00"),
+                           ("testDuration", "00:01:00"),
                            ("verificationDelay", "00:00:10"),
                            ("STORAGE_ACCOUNT_CONNECTION_STRING", "Unnecessary value for e2e test"),
                            ("NetworkControllerRunProfile", "unnecessary"),
@@ -112,12 +113,15 @@ namespace Microsoft.Azure.Devices.Edge.Test
 
             EdgeDeployment deployment = await this.runtime.DeployConfigurationAsync(addInitialConfig, token);
 
+            // Wait for loadGen to send some messages
+            await Task.Delay(TimeSpan.FromSeconds(10));
+
             Action<EdgeConfigBuilder> addRelayerConfig = new Action<EdgeConfigBuilder>(
                 builder =>
                 {
                     builder.AddModule(relayerModuleName, relayerImage)
                         .WithEnvironment(new[] { ("receiveOnly", "true") });
-        });
+            });
 
             deployment = await this.runtime.DeployConfigurationAsync(addInitialConfig + addRelayerConfig, token);
 
