@@ -5,16 +5,13 @@ namespace Microsoft.Azure.Devices.Edge.Test
     using Microsoft.Azure.Devices.Edge.Test.Common.Config;
     using Microsoft.Azure.Devices.Edge.Test.Helpers;
     using Microsoft.Azure.Devices.Edge.Util.Test.Common.NUnit;
-    using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using NUnit.Framework;
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
-    using TestResultCoordinator.Reports;
 
     [EndToEnd]
     public class PriorityQueues : SasManualProvisioningFixture
@@ -105,6 +102,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
             HttpClient client = new HttpClient();
             HttpResponseMessage response = await client.GetAsync("http://localhost:5001/api/report");
             var jsonstring = await response.Content.ReadAsStringAsync();
+            Console.WriteLine("got json string: \n" + jsonstring);
             var objects = JArray.Parse(jsonstring);
             var report = objects[0];
             bool isPassed = Boolean.Parse((string)report["isPassed"]);
