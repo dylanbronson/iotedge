@@ -6,6 +6,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
     using Microsoft.Azure.Devices.Edge.Test.Helpers;
     using Microsoft.Azure.Devices.Edge.Util.Test.Common.NUnit;
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
     using NUnit.Framework;
     using System;
     using System.Collections.Generic;
@@ -18,33 +19,6 @@ namespace Microsoft.Azure.Devices.Edge.Test
     [EndToEnd]
     public class PriorityQueues : SasManualProvisioningFixture
     {
-        // Here, put an end to end test for priority queues.
-        // End to end will look something like this:
-        // Start up edge with Sender module (load gen would work well)
-        // Wait a bit while the sender module sends messages
-        // Start up a receiver module
-        // Verify that the receiver module received the messages correctly
-
-        private sealed class TestResultCoordinator
-        {
-            public string Name { get; }
-            public string Image { get; }
-
-            private const string DefaultSensorImage = "mcr.microsoft.com/azureiotedge-simulated-temperature-sensor:1.0";
-            private static int instanceCount = 0;
-
-            private TestResultCoordinator(int number)
-            {
-                this.Name = "tempSensor" + number.ToString();
-                this.Image = Context.Current.TempSensorImage.GetOrElse(DefaultSensorImage);
-            }
-
-            public static TestResultCoordinator GetInstance()
-            {
-                return new TestResultCoordinator(TestResultCoordinator.instanceCount++);
-            }
-        }
-
         [Test]
         public async Task PriorityQueueModuleToModuleMessages()
         {
@@ -131,8 +105,10 @@ namespace Microsoft.Azure.Devices.Edge.Test
             HttpClient client = new HttpClient();
             HttpResponseMessage response = await client.GetAsync("http://localhost:5001/api/report");
             var jsonstring = await response.Content.ReadAsStringAsync();
-            List<ITestResultReport> reports = JsonConvert.DeserializeObject<List<ITestResultReport>>(jsonstring);
-            Assert.IsTrue(reports[0].IsPassed);
+            var objects = JArray.Parse(jsonstring);
+            var report = objects[0];
+            bool isPassed = Boolean.Parse((string)report["isPassed"]);
+            Assert.IsTrue(isPassed);
 
             // Next steps:
             // fill in trc env vars
