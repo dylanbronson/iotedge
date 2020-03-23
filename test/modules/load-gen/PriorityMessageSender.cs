@@ -11,7 +11,7 @@ namespace LoadGen
 
     class PriorityMessageSender : SenderBase
     {
-        readonly string[] outputs = new string[] { "pri0, pri1, pri2, pri3" };
+        readonly string[] outputs = new string[] { "pri0", "pri1", "pri2", "pri3" };
 
         readonly Random rng = new Random();
 
@@ -34,7 +34,7 @@ namespace LoadGen
             {
                 try
                 {
-                    int priority = this.rng.Next(3);
+                    int priority = this.rng.Next(4);
                     string output = this.outputs[priority];
 
                     await this.SendEventAsync(messageIdCounter, output);
@@ -65,6 +65,8 @@ namespace LoadGen
                 }
             }
 
+            this.Logger.LogInformation("Sending finished. Now sending expected results to TRC");
+
             // Sort by priority then sequence number. Then, select just the sequence numbers
             List<int> expectedSequenceNumberList = priorityAndSequenceList
                 .OrderBy(t => t.Item1)
@@ -72,9 +74,12 @@ namespace LoadGen
                 .Select(t => t.Item1)
                 .ToList();
 
+            await this.ReportResult(1);
+
             foreach (int sequenceNumber in expectedSequenceNumberList)
             {
                 // Report sending message successfully to Test Result Coordinator
+                this.Logger.LogInformation($"Sending sequence number {sequenceNumber} to TRC");
                 await this.ReportResult(sequenceNumber);
             }
         }

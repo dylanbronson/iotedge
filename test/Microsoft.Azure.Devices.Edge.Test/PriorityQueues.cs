@@ -68,7 +68,8 @@ namespace Microsoft.Azure.Devices.Edge.Test
                         .WithEnvironment(new[]
                         {
                             ("testResultCoordinatorUrl", trcUrl),
-                            ("senderType", "PriorityMessageSender")
+                            ("senderType", "PriorityMessageSender"),
+                            ("trackingId", "e2eTestTrackingId")
                         });
 
             builder.GetModule(ModuleName.EdgeHub)
