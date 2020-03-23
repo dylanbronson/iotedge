@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
                            ("logAnalyticsSharedKey", "Unnecessary value for e2e test"),
                            ("logAnalyticsLogType", "Unnecessary"),
                            ("testStartDelay", "00:00:00"),
-                           ("testDuration", "00:02:00"),
+                           ("testDuration", "00:03:00"),
                            ("verificationDelay", "00:00:10"),
                            ("STORAGE_ACCOUNT_CONNECTION_STRING", "Unnecessary value for e2e test"),
                            ("NetworkControllerRunProfile", "Online"),
