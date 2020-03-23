@@ -76,6 +76,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
                            ("NetworkControllerRunProfile", "Online"),
                            ("TEST_INFO", "key=value")
                        })
+                       .WithSettings(new[] { ("createOptions", "{\"HostConfig\": {\"PortBindings\": {\"5001/tcp\": [{\"HostPort\": \"5001\"}]}}}") })
 
                        .WithDesiredProperties(new Dictionary<string, object>
                        {
@@ -114,7 +115,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
             EdgeDeployment deployment = await this.runtime.DeployConfigurationAsync(addInitialConfig, token);
 
             // Wait for loadGen to send some messages
-            await Task.Delay(TimeSpan.FromSeconds(10));
+            await Task.Delay(TimeSpan.FromSeconds(20));
 
             Action<EdgeConfigBuilder> addRelayerConfig = new Action<EdgeConfigBuilder>(
                 builder =>
@@ -124,9 +125,10 @@ namespace Microsoft.Azure.Devices.Edge.Test
             });
 
             deployment = await this.runtime.DeployConfigurationAsync(addInitialConfig + addRelayerConfig, token);
+            await Task.Delay(TimeSpan.FromSeconds(20));
 
             HttpClient client = new HttpClient();
-            HttpResponseMessage response = await client.GetAsync(trcUrl + "/api/report");
+            HttpResponseMessage response = await client.GetAsync("http://localhost:5001/api/report");
             ITestResultReport[] reports = await response.Content.ReadAsAsync<ITestResultReport[]>();
             Assert.IsTrue(reports[0].IsPassed);
 
