@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
                            ("verificationDelay", "00:00:10"),
                            ("STORAGE_ACCOUNT_CONNECTION_STRING", "Unnecessary value for e2e test"),
                            ("NetworkControllerRunProfile", "Online"),
-                           ("TEST_INFO", "key=value[,key=value]")
+                           ("TEST_INFO", "key=value")
                        })
 
                        .WithDesiredProperties(new Dictionary<string, object>
