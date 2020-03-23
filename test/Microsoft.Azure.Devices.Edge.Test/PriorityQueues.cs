@@ -69,10 +69,11 @@ namespace Microsoft.Azure.Devices.Edge.Test
                         {
                             ("testResultCoordinatorUrl", trcUrl),
                             ("senderType", "PriorityMessageSender"),
-                            ("trackingId", "e2eTestTrackingId")
+                            ("trackingId", "e2eTestTrackingId"),
+                            ("testDuration", "00:00:20")
                         });
 
-            builder.GetModule(ModuleName.EdgeHub)
+                    builder.GetModule(ModuleName.EdgeHub)
                         .WithDesiredProperties(new Dictionary<string, object>
                         {
                             ["routes"] = new
