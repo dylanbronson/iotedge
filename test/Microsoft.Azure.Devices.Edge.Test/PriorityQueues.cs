@@ -98,11 +98,6 @@ namespace Microsoft.Azure.Devices.Edge.Test
                                     ["route"] = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri3 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
                                     ["priority"] = 3
                                 }
-
-                                // LoadGenToRelayer1 = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri0 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
-                                // LoadGenToRelayer2 = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri1 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
-                                // LoadGenToRelayer3 = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri2 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
-                                // LoadGenToRelayer4 = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri3 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
                             }
                         });
                 });
@@ -128,14 +123,8 @@ namespace Microsoft.Azure.Devices.Edge.Test
             Console.WriteLine("got json string: \n" + jsonstring);
             var objects = JArray.Parse(jsonstring);
             var report = objects[0];
-            bool isPassed = Boolean.Parse((string)report["isPassed"]);
+            bool isPassed = Boolean.Parse((string)report["IsPassed"]);
             Assert.IsTrue(isPassed);
-
-            // Next steps:
-            // fill in trc env vars
-            // fill in other env vars
-            // good to go? - find images of these bad boys and run it
-            // Ask damon - Where are these containers run when you run these locally?
         }
     }   
 }
