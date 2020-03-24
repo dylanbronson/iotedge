@@ -85,17 +85,17 @@ namespace Microsoft.Azure.Devices.Edge.Test
                                 },
                                 ["LoadGenToRelayer2"] = new Dictionary<string, object>
                                 {
-                                    ["route"] = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri0 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
+                                    ["route"] = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri1 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
                                     ["priority"] = 1
                                 },
                                 ["LoadGenToRelayer3"] = new Dictionary<string, object>
                                 {
-                                    ["route"] = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri0 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
+                                    ["route"] = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri2 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
                                     ["priority"] = 2
                                 },
                                 ["LoadGenToRelayer4"] = new Dictionary<string, object>
                                 {
-                                    ["route"] = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri0 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
+                                    ["route"] = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri3 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
                                     ["priority"] = 3
                                 }
 
