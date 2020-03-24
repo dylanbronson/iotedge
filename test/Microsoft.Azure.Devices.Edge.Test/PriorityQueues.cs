@@ -76,12 +76,33 @@ namespace Microsoft.Azure.Devices.Edge.Test
                     builder.GetModule(ModuleName.EdgeHub)
                         .WithDesiredProperties(new Dictionary<string, object>
                         {
-                            ["routes"] = new
+                            ["routes"] = new Dictionary<string, object>
                             {
-                                LoadGenToRelayer1 = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri0 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
-                                LoadGenToRelayer2 = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri1 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
-                                LoadGenToRelayer3 = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri2 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
-                                LoadGenToRelayer4 = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri3 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
+                                ["LoadGenToRelayer1"] = new Dictionary<string, object>
+                                {
+                                    ["route"] = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri0 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
+                                    ["priority"] = 0
+                                },
+                                ["LoadGenToRelayer2"] = new Dictionary<string, object>
+                                {
+                                    ["route"] = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri0 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
+                                    ["priority"] = 1
+                                },
+                                ["LoadGenToRelayer3"] = new Dictionary<string, object>
+                                {
+                                    ["route"] = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri0 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
+                                    ["priority"] = 2
+                                },
+                                ["LoadGenToRelayer4"] = new Dictionary<string, object>
+                                {
+                                    ["route"] = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri0 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
+                                    ["priority"] = 3
+                                }
+
+                                // LoadGenToRelayer1 = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri0 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
+                                // LoadGenToRelayer2 = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri1 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
+                                // LoadGenToRelayer3 = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri2 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
+                                // LoadGenToRelayer4 = "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri3 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
                             }
                         });
                 });
