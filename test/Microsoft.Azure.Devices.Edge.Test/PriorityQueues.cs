@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
                        .WithEnvironment(new[]
                        {
                            ("trackingId", Guid.NewGuid().ToString()),
-                           ("eventHubConnectionString", "Endpoasdfint=sb://dybronsoeventhub.servicebus.windows.net/;EntityPath=DybronsoTestEventHub;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=7ycWedM+hFb8+PKGO2ST7Z9Q7X7VlWB1BSczFAnOs38="),
+                           ("eventHubConnectionString", "Unnecessary"),
                            ("IOT_HUB_CONNECTION_STRING", "HostName=dybronso-iot-hub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=g8BRuiPbFRLEttMsncI6aHUw21Jjr+AEb/Yf4brYD7Y="),
                            ("logAnalyticsWorkspaceId", "Unnecessary value for e2e test"),
                            ("logAnalyticsSharedKey", "Unnecessary value for e2e test"),
