@@ -19,6 +19,10 @@ namespace Microsoft.Azure.Devices.Edge.Test
         [Test]
         public async Task PriorityQueueModuleToModuleMessages()
         {
+            // This test uses the TestResultCoordinator. It was originally designed for connectivity tests, so many of the parameters
+            // are unnecessary for the e2e tests.
+            // TODO: Make TestResultCoordinator more generic, so we don't have to fill out garbage values in the e2e tests.
+
             CancellationToken token = this.TestToken;
             string trcImage = Context.Current.TestResultCoordinatorImage.Expect(() => new ArgumentException("testResultCoordinatorImage parameter is required for Priority Queues test"));
             string loadGenImage = Context.Current.LoadGenImage.Expect(() => new ArgumentException("loadGenImage parameter is required for TempFilter test"));
@@ -60,7 +64,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
                                    ["TestOperationResultType"] = "Messages",
                                    ["ExpectedSource"] = "loadGenModule.send",
                                    ["ActualSource"] = "relayerModule.receive",
-                                   ["TestDescription"] = "this field isn't used by TRC for E2E tests"
+                                   ["TestDescription"] = "unnecessary"
                                }
                            }
                        });
@@ -70,7 +74,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
                             ("testResultCoordinatorUrl", trcUrl),
                             ("senderType", "PriorityMessageSender"),
                             ("trackingId", "e2eTestTrackingId"),
-                            ("testDuration", "00:00:30")
+                            ("testDuration", "00:00:20")
                         });
 
                     builder.GetModule(ModuleName.EdgeHub)
@@ -105,7 +109,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
             EdgeDeployment deployment = await this.runtime.DeployConfigurationAsync(addInitialConfig, token);
 
             // Wait for loadGen to send some messages
-            await Task.Delay(TimeSpan.FromSeconds(20));
+            await Task.Delay(TimeSpan.FromSeconds(15));
 
             Action<EdgeConfigBuilder> addRelayerConfig = new Action<EdgeConfigBuilder>(
                 builder =>
@@ -117,7 +121,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
             deployment = await this.runtime.DeployConfigurationAsync(addInitialConfig + addRelayerConfig, token);
 
             // Wait for relayer to spin up, receive messages, and pass along results to TRC
-            await Task.Delay(TimeSpan.FromSeconds(20));
+            await Task.Delay(TimeSpan.FromSeconds(15));
 
             HttpClient client = new HttpClient();
             HttpResponseMessage response = await client.GetAsync("http://localhost:5001/api/report");
