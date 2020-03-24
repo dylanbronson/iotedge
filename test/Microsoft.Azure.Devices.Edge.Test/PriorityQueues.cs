@@ -121,9 +121,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
             HttpResponseMessage response = await client.GetAsync("http://localhost:5001/api/report");
             var jsonstring = await response.Content.ReadAsStringAsync();
             Console.WriteLine("got json string: \n" + jsonstring);
-            var objects = JArray.Parse(jsonstring);
-            var report = objects[0];
-            bool isPassed = Boolean.Parse((string)report["IsPassed"]);
+            bool isPassed = (bool)JArray.Parse(jsonstring)[0]["IsPassed"];
             Assert.IsTrue(isPassed);
         }
     }   
