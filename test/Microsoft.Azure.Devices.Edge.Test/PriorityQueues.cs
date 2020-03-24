@@ -33,13 +33,15 @@ namespace Microsoft.Azure.Devices.Edge.Test
             const string relayerModuleName = "relayerModule";
             const string trcUrl = "http://" + trcModuleName + ":5001";
 
+            string guid = Guid.NewGuid().ToString();
+
             Action<EdgeConfigBuilder> addInitialConfig = new Action<EdgeConfigBuilder>(
                 builder =>
                 {
                     builder.AddModule(trcModuleName, trcImage)
                        .WithEnvironment(new[]
                        {
-                           ("trackingId", Guid.NewGuid().ToString()),
+                           ("trackingId", guid),
                            ("eventHubConnectionString", "Unnecessary"),
                            ("IOT_HUB_CONNECTION_STRING", this.iotHub.IoTHubConnectionString),
                            ("logAnalyticsWorkspaceId", "Unnecessary"),
@@ -117,7 +119,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
                 {
                     builder.AddModule(relayerModuleName, relayerImage)
                         .WithEnvironment(new[] { ("receiveOnly", "true") });
-            });
+                });
 
             deployment = await this.runtime.DeployConfigurationAsync(addInitialConfig + addRelayerConfig, token);
 
