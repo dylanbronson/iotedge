@@ -74,8 +74,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
                             ("testResultCoordinatorUrl", trcUrl),
                             ("senderType", "PriorityMessageSender"),
                             ("trackingId", "e2eTestTrackingId"),
-                            ("testDuration", "00:00:10"),
-                            ("testStartDelay", "")
+                            ("testDuration", "00:00:10")
                         });
 
                     builder.GetModule(ModuleName.EdgeHub)
