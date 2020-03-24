@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
                        {
                            ("trackingId", Guid.NewGuid().ToString()),
                            ("eventHubConnectionString", "Unnecessary"),
-                           // ("IOT_HUB_CONNECTION_STRING", "HostName=dybronso-iot-hub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=g8BRuiPbFRLEttMsncI6aHUw21Jjr+AEb/Yf4brYD7Y="),
+                           ("IOT_HUB_CONNECTION_STRING", this.iotHub.IoTHubConnectionString),
                            ("logAnalyticsWorkspaceId", "Unnecessary"),
                            ("logAnalyticsSharedKey", "Unnecessary"),
                            ("logAnalyticsLogType", "Unnecessary"),
