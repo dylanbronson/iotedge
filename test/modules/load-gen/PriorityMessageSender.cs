@@ -58,7 +58,7 @@ namespace LoadGen
                     }
 
                     messageIdCounter++;
-                    await Task.Delay(TimeSpan.FromSeconds(1));
+                    await Task.Delay(Settings.Current.MessageFrequency);
                 }
                 catch (Exception ex)
                 {

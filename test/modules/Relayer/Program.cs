@@ -118,7 +118,6 @@ namespace Relayer
                 () => ModuleUtil.ReportTestResultAsync(
                     testResultReportingClient, Logger, testResultReceived),
                 RetryingReportTestResult);
-                await ModuleUtil.ReportTestResultAsync(testResultReportingClient, Logger, testResultReceived);
 
                 Logger.LogInformation($"Successfully received message: trackingid={trackingId}, batchId={batchId}, sequenceNumber={sequenceNumber}");
 

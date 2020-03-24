@@ -74,7 +74,8 @@ namespace Microsoft.Azure.Devices.Edge.Test
                             ("testResultCoordinatorUrl", trcUrl),
                             ("senderType", "PriorityMessageSender"),
                             ("trackingId", "e2eTestTrackingId"),
-                            ("testDuration", "00:00:20")
+                            ("testDuration", "00:00:10"),
+                            ("testStartDelay", "")
                         });
 
                     builder.GetModule(ModuleName.EdgeHub)
@@ -109,7 +110,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
             EdgeDeployment deployment = await this.runtime.DeployConfigurationAsync(addInitialConfig, token);
 
             // Wait for loadGen to send some messages
-            await Task.Delay(TimeSpan.FromSeconds(20));
+            await Task.Delay(TimeSpan.FromSeconds(15));
 
             Action<EdgeConfigBuilder> addRelayerConfig = new Action<EdgeConfigBuilder>(
                 builder =>
