@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
                        .WithEnvironment(new[]
                        {
                            ("trackingId", Guid.NewGuid().ToString()),
-                           ("eventHubConnectionString", "Endpoint=sb://dybronsoeventhub.servicebus.windows.net/;EntityPath=DybronsoTestEventHub;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=7ycWedM+hFb8+PKGO2ST7Z9Q7X7VlWB1BSczFAnOs38="),
+                           ("eventHubConnectionString", "Endpoasdfint=sb://dybronsoeventhub.servicebus.windows.net/;EntityPath=DybronsoTestEventHub;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=7ycWedM+hFb8+PKGO2ST7Z9Q7X7VlWB1BSczFAnOs38="),
                            ("IOT_HUB_CONNECTION_STRING", "HostName=dybronso-iot-hub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=g8BRuiPbFRLEttMsncI6aHUw21Jjr+AEb/Yf4brYD7Y="),
                            ("logAnalyticsWorkspaceId", "Unnecessary value for e2e test"),
                            ("logAnalyticsSharedKey", "Unnecessary value for e2e test"),
@@ -115,14 +115,18 @@ namespace Microsoft.Azure.Devices.Edge.Test
             });
 
             deployment = await this.runtime.DeployConfigurationAsync(addInitialConfig + addRelayerConfig, token);
+
+            // Wait for relayer to spin up, receive messages, and pass along results to TRC
             await Task.Delay(TimeSpan.FromSeconds(20));
 
             HttpClient client = new HttpClient();
             HttpResponseMessage response = await client.GetAsync("http://localhost:5001/api/report");
             var jsonstring = await response.Content.ReadAsStringAsync();
-            Console.WriteLine("got json string: \n" + jsonstring);
             bool isPassed = (bool)JArray.Parse(jsonstring)[0]["IsPassed"];
             Assert.IsTrue(isPassed);
+            // Tomorrow:
+            // Figure out what to do with eventHub parameter - make this test run out of the box
+            // Send out PR and begin working on TTL? Or investigation?
         }
     }   
 }
