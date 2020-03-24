@@ -37,16 +37,16 @@ namespace Microsoft.Azure.Devices.Edge.Test
                        {
                            ("trackingId", Guid.NewGuid().ToString()),
                            ("eventHubConnectionString", "Unnecessary"),
-                           ("IOT_HUB_CONNECTION_STRING", "HostName=dybronso-iot-hub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=g8BRuiPbFRLEttMsncI6aHUw21Jjr+AEb/Yf4brYD7Y="),
-                           ("logAnalyticsWorkspaceId", "Unnecessary value for e2e test"),
-                           ("logAnalyticsSharedKey", "Unnecessary value for e2e test"),
+                           // ("IOT_HUB_CONNECTION_STRING", "HostName=dybronso-iot-hub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=g8BRuiPbFRLEttMsncI6aHUw21Jjr+AEb/Yf4brYD7Y="),
+                           ("logAnalyticsWorkspaceId", "Unnecessary"),
+                           ("logAnalyticsSharedKey", "Unnecessary"),
                            ("logAnalyticsLogType", "Unnecessary"),
                            ("testStartDelay", "00:00:00"),
-                           ("testDuration", "00:03:00"),
-                           ("verificationDelay", "00:00:10"),
-                           ("STORAGE_ACCOUNT_CONNECTION_STRING", "Unnecessary value for e2e test"),
+                           ("testDuration", "00:20:00"),
+                           ("verificationDelay", "00:00:00"),
+                           ("STORAGE_ACCOUNT_CONNECTION_STRING", "Unnecessary"),
                            ("NetworkControllerRunProfile", "Online"),
-                           ("TEST_INFO", "key=value")
+                           ("TEST_INFO", "key=unnecessary")
                        })
                        .WithSettings(new[] { ("createOptions", "{\"HostConfig\": {\"PortBindings\": {\"5001/tcp\": [{\"HostPort\": \"5001\"}]}}}") })
 
@@ -124,9 +124,6 @@ namespace Microsoft.Azure.Devices.Edge.Test
             var jsonstring = await response.Content.ReadAsStringAsync();
             bool isPassed = (bool)JArray.Parse(jsonstring)[0]["IsPassed"];
             Assert.IsTrue(isPassed);
-            // Tomorrow:
-            // Figure out what to do with eventHub parameter - make this test run out of the box
-            // Send out PR and begin working on TTL? Or investigation?
         }
     }   
 }
