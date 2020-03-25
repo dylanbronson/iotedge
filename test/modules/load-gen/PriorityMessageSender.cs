@@ -55,7 +55,7 @@ namespace LoadGen
                     }
                     else
                     {
-                        priorityAndSequenceList.Add((int.Parse(output), messageIdCounter));
+                        priorityAndSequenceList.Add((int.Parse(output.Substring(3)), messageIdCounter));
                     }
 
                     if (messageIdCounter % 1000 == 0)
