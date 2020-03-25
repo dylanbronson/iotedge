@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
                     {
                         routes.Add($"LoadGenToRelayer{priority}", new Dictionary<string, object>
                         {
-                            ["route"] = $"FROM /messages/modules/{loadGenModuleName}/outputs/pri0 INTO BrokeredEndpoint('/modules/{relayerModuleName}/inputs/input1')",
+                            ["route"] = $"FROM /messages/modules/{loadGenModuleName}/outputs/182 INTO BrokeredEndpoint('/modules/{relayerModuleName}/inputs/input1')",
                             ["priority"] = int.Parse(priority)
                         });
                     }
