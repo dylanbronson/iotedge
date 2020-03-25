@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
                        {
                            ("trackingId", trackingId),
                            ("eventHubConnectionString", "Unnecessary"),
-                           ("IOT_HUB_CONNECTION_STRING", this.iotHub.IoTHubConnectionString),
+                           ("IOT_HUB_CONNECTION_STRING", Context.Current.ConnectionString),
                            ("logAnalyticsWorkspaceId", "Unnecessary"),
                            ("logAnalyticsSharedKey", "Unnecessary"),
                            ("logAnalyticsLogType", "Unnecessary"),

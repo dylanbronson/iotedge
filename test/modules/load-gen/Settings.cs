@@ -23,7 +23,7 @@ namespace LoadGen
             string trackingId,
             Option<string> testResultCoordinatorUrl,
             string moduleId,
-            SenderType senderType,
+            LoadGenSenderType senderType,
             Option<string> priorities)
         {
             Preconditions.CheckRange(messageFrequency.Ticks, 0);
@@ -70,7 +70,7 @@ namespace LoadGen
                 configuration.GetValue("trackingId", string.Empty),
                 Option.Maybe(testResultCoordinatorUrl),
                 configuration.GetValue<string>("IOTEDGE_MODULEID"),
-                configuration.GetValue("senderType", SenderType.DefaultSender),
+                configuration.GetValue("senderType", LoadGenSenderType.DefaultSender),
                 Option.Maybe(priorities));
         }
 
@@ -92,7 +92,7 @@ namespace LoadGen
 
         public Option<string> TestResultCoordinatorUrl { get; }
 
-        public SenderType SenderType { get; }
+        public LoadGenSenderType SenderType { get; }
 
         public Option<string> Priorities { get; }
 
