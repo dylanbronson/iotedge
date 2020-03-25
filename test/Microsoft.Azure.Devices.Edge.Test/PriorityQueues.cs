@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Edge.Test
                             ("senderType", "PriorityMessageSender"),
                             ("trackingId", trackingId),
                             ("testDuration", "00:00:15"),
-                            ("messageFrequency", "00:00:01"),
+                            ("messageFrequency", "00:00:00.5"),
                             ("priorities", priorityString)
                         });
 
