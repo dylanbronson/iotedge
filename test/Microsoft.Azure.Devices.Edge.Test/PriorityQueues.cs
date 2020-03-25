@@ -72,17 +72,6 @@ namespace Microsoft.Azure.Devices.Edge.Test
                        });
 
                     string priorityString = "182;0;8000;15";
-                    string[] priorities = priorityString.Split(';');
-                    Dictionary<string, object> routes = new Dictionary<string, object>();
-                    foreach(string priority in priorities)
-                    {
-                        routes.Add($"LoadGenToRelayer{priority}", new Dictionary<string, object>
-                        {
-                            ["route"] = $"FROM /messages/modules/{loadGenModuleName}/outputs/pri{priority} INTO BrokeredEndpoint('/modules/{relayerModuleName}/inputs/input1')",
-                            ["priority"] = int.Parse(priority)
-                        });
-                    }
-
                     builder.AddModule(loadGenModuleName, loadGenImage)
                         .WithEnvironment(new[]
                         {
@@ -93,38 +82,9 @@ namespace Microsoft.Azure.Devices.Edge.Test
                             ("messageFrequency", "00:00:01"),
                             ("priorities", priorityString)
                         });
-                    builder.GetModule(ModuleName.EdgeHub)
-                        .WithDesiredProperties(new Dictionary<string, object>
-                        {
-                            ["routes"] = routes
-                        });
-                        //new Dictionary<string, object>
-                        //{
-                            
-                        //    ["routes"] = new Dictionary<string, object>
-                        //    {
-                        //        ["LoadGenToRelayer1"] = new Dictionary<string, object>
-                        //        {
-                        //            ["route"] = string.Format(routeTemplate, "0"),  // "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri0 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
-                        //            ["priority"] = 0
-                        //        },
-                        //        ["LoadGenToRelayer2"] = new Dictionary<string, object>
-                        //        {
-                        //            ["route"] = string.Format(routeTemplate, "1"), // "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri1 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
-                        //            ["priority"] = 1
-                        //        },
-                        //        ["LoadGenToRelayer3"] = new Dictionary<string, object>
-                        //        {
-                        //            ["route"] = string.Format(routeTemplate, "2"), // "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri2 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
-                        //            ["priority"] = 50
-                        //        },
-                        //        ["LoadGenToRelayer4"] = new Dictionary<string, object>
-                        //        {
-                        //            ["route"] = string.Format(routeTemplate, "3"), // "FROM /messages/modules/" + loadGenModuleName + "/outputs/pri3 INTO BrokeredEndpoint('/modules/" + relayerModuleName + "/inputs/input1')",
-                        //            ["priority"] = 182
-                        //        }
-                        //    }
-                        //});
+
+                    Dictionary<string, object> routes = this.BuildRoutes(priorityString.Split(';'), loadGenModuleName, relayerModuleName);
+                    builder.GetModule(ModuleName.EdgeHub).WithDesiredProperties(new Dictionary<string, object> { ["routes"] = routes });
                 });
 
             EdgeDeployment deployment = await this.runtime.DeployConfigurationAsync(addInitialConfig, token);
@@ -149,6 +109,20 @@ namespace Microsoft.Azure.Devices.Edge.Test
             var jsonstring = await response.Content.ReadAsStringAsync();
             bool isPassed = (bool)JArray.Parse(jsonstring)[0]["IsPassed"];
             Assert.IsTrue(isPassed);
+        }
+
+        private Dictionary<string, object> BuildRoutes(string[] priorities, string sendModule, string receiveModule)
+        {
+            Dictionary<string, object> routes = new Dictionary<string, object>();
+            foreach (string priority in priorities)
+            {
+                routes.Add($"LoadGenToRelayer{priority}", new Dictionary<string, object>
+                {
+                    ["route"] = $"FROM /messages/modules/{sendModule}/outputs/pri{priority} INTO BrokeredEndpoint('/modules/{receiveModule}/inputs/input1')",
+                    ["priority"] = int.Parse(priority)
+                });
+            }
+            return routes;
         }
     }
 }
