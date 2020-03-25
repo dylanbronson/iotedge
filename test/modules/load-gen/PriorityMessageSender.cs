@@ -27,7 +27,10 @@ namespace LoadGen
         {
             string priorityString = Settings.Current.Priorities.Expect(() =>
                 new ArgumentException("PriorityMessageSender must have 'priorities' environment variable set to a valid list of string delimited by ';'"));
-            string[] outputs = priorityString.Split(';');
+            string[] outputs = priorityString
+                .Split(';')
+                .Select(x => "pri" + x)
+                .ToArray();
 
             bool firstMessageWhileOffline = true;
             var priorityAndSequenceList = new List<(int, long)>();
