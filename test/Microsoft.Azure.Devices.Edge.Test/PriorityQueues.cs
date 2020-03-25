@@ -94,7 +94,10 @@ namespace Microsoft.Azure.Devices.Edge.Test
                             ("priorities", priorityString)
                         });
                     builder.GetModule(ModuleName.EdgeHub)
-                        .WithDesiredProperties(routes);
+                        .WithDesiredProperties(new Dictionary<string, object>
+                        {
+                            ["routes"] = routes
+                        });
                         //new Dictionary<string, object>
                         //{
                             

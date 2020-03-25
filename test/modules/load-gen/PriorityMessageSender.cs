@@ -12,7 +12,6 @@ namespace LoadGen
     class PriorityMessageSender : SenderBase
     {
         // readonly string[] outputs = new string[] { "pri0", "pri1", "pri2", "pri3" };
-
         readonly Random rng = new Random();
 
         public PriorityMessageSender(
@@ -53,7 +52,7 @@ namespace LoadGen
                     }
                     else
                     {
-                        priorityAndSequenceList.Add((Int32.Parse(output), messageIdCounter));
+                        priorityAndSequenceList.Add((int.Parse(output), messageIdCounter));
                     }
 
                     if (messageIdCounter % 1000 == 0)
