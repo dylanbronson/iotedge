@@ -82,7 +82,7 @@ namespace LoadGen
 
             this.Logger.LogInformation($"Sending finished. Now sending expected results to {Settings.Current.TestResultCoordinatorUrl}");
 
-            // Sort by priority then sequence number. Then, select just the sequence numbers
+            // Sort priority by sequence number
             List<long> expectedSequenceNumberList = priorityAndSequence
                 .SelectMany(t =>
                 {
@@ -90,7 +90,6 @@ namespace LoadGen
                     return t.Value;
                 })
                 .ToList();
-
 
             // See explanation above why we need to send sequence number 1 first
             await this.ReportResult(1);
