@@ -23,11 +23,19 @@ namespace DPURepro
                         ModuleUtil.DefaultTransientRetryStrategy,
                         Logger);
             await moduleClient.SetDesiredPropertyUpdateCallbackAsync(ReceivedUpdate, null);
+            // int counter = 0;
+            // while (true)
+            // {
+            //     await moduleClient.UpdateReportedPropertiesAsync(new TwinCollection($"{{\"json\":\"{counter}\"}}"));
+            //     counter++;
+            //     Logger.LogInformation($"Updated reported prop: {counter}");
+            //     await Task.Delay(TimeSpan.FromSeconds(10));
+            // }
 
-            await cts.Token.WhenCanceled();
-            completed.Set();
-            handler.ForEach(h => GC.KeepAlive(h));
-            Logger.LogInformation("TwinTester exiting.");
+             await cts.Token.WhenCanceled();
+             completed.Set();
+             handler.ForEach(h => GC.KeepAlive(h));
+             Logger.LogInformation("TwinTester exiting.");
         }
 
         static Task ReceivedUpdate(TwinCollection twinCollection, object _)
