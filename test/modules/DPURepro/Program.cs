@@ -22,6 +22,8 @@ namespace DPURepro
                         ModuleUtil.DefaultTimeoutErrorDetectionStrategy,
                         ModuleUtil.DefaultTransientRetryStrategy,
                         Logger);
+
+            await moduleClient.GetTwinAsync();
             await moduleClient.SetDesiredPropertyUpdateCallbackAsync(ReceivedUpdate, null);
 
             // Uncomment out below to enable ReportedPropertyUpdates
