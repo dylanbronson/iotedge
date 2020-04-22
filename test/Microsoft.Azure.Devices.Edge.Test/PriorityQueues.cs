@@ -55,6 +55,38 @@ namespace Microsoft.Azure.Devices.Edge.Test
         }
 
         [Test]
+        public async Task PriorityQueueModuleToHubMessages()
+        {
+            // TODO: Fix PriorityQueue E2E tests for Windows and ARM32
+            if (OsPlatform.IsWindows() || !OsPlatform.Is64Bit())
+            {
+                Assert.Ignore("Priority Queue module to module messages test has been disabled for Windows and Arm32 until we can fix it.");
+            }
+
+            CancellationToken token = this.TestToken;
+            string trcImage = Context.Current.TestResultCoordinatorImage.Expect(() => new ArgumentException("testResultCoordinatorImage parameter is required for Priority Queues test"));
+            string loadGenImage = Context.Current.LoadGenImage.Expect(() => new ArgumentException("loadGenImage parameter is required for Priority Queues test"));
+            string relayerImage = Context.Current.RelayerImage.Expect(() => new ArgumentException("relayerImage parameter is required for Priority Queues test"));
+            string trackingId = Guid.NewGuid().ToString();
+            TestInfo testInfo = this.InitTestInfo(5, 1000, true);
+
+            Action<EdgeConfigBuilder> addInitialConfig = this.BuildAddInitialConfig(trackingId, trcImage, loadGenImage, testInfo);
+            EdgeDeployment deployment = await this.runtime.DeployConfigurationAsync(addInitialConfig, token);
+            PriorityQueueTestStatus loadGenTestStatus = await this.PollUntilFinishedAsync(LoadGenModuleName, token);
+            int results = 0;
+            await this.iotHub.ReceiveEventsAsync(
+                this.runtime.DeviceId,
+                deployment.StartTime,
+                data =>
+                {
+                    results++;
+                    return results == loadGenTestStatus.ResultCount;
+                },
+                token);
+            await this.ValidateResultsAsync();
+        }
+
+        [Test]
         public async Task PriorityQueueTimeToLive()
         {
             // TODO: Fix PriorityQueue TTL E2E tests for Windows and ARM32
