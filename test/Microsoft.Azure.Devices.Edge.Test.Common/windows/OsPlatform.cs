@@ -88,5 +88,7 @@ namespace Microsoft.Azure.Devices.Edge.Test.Common.Windows
 
             return string.Join(";", commands);
         }
+
+        public Task ClearNetworkRules(CancellationToken token) => throw new NotImplementedException("Not implemented for Windows");
     }
 }
