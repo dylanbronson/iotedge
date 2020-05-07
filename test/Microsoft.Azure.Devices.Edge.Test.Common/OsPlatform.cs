@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Edge.Test.Common
             CancellationToken token)
         {
             Log.Verbose("Executing: " + command.name + ' ' + command.args);
-            Log.Verbose($"Path: {await Process.RunAsync("pwd", string.Empty, token)} ");
+            Log.Verbose($"Path: {(await Process.RunAsync("pwd", string.Empty, token))[0]} ");
             string[] output = await Process.RunAsync(command.name, command.args, token);
             Log.Verbose(string.Join("\n", output));
         }
