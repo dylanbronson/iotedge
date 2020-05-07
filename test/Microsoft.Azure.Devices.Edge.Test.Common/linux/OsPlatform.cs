@@ -10,6 +10,7 @@ namespace Microsoft.Azure.Devices.Edge.Test.Common.Linux
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Edge.Test.Common.Certs;
     using Microsoft.Azure.Devices.Edge.Util;
+    using Serilog;
 
     public class OsPlatform : Common.OsPlatform, IOsPlatform
     {
@@ -54,6 +55,12 @@ namespace Microsoft.Azure.Devices.Edge.Test.Common.Linux
 
         public void InstallTrustedCertificates(IEnumerable<X509Certificate2> certs) =>
             this.InstallTrustedCertificates(certs, StoreName.Root);
+
+        public async Task ClearNetworkRules(CancellationToken token)
+        {
+            Log.Logger.Information("clearing network rules");
+            await this.RunScriptAsync(("../linux/clearNetworkRules.sh", string.Empty), token);
+        }
 
         static string BuildCertCommand(string command, string scriptPath) =>
             $"-c \"FORCE_NO_PROD_WARNING=true '{Path.Combine(scriptPath, "certGen.sh")}' {command}\"";
