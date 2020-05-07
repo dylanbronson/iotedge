@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Edge.Test.Common
             Log.Verbose(string.Join("\n", output));
         }
 
-        public static async Task ClearNetworkRules(CancellationToken token)
+        public static async Task ClearNetwork(CancellationToken token)
         {
             await Current.ClearNetworkRules(token);
         }
