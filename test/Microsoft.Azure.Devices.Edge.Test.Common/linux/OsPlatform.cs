@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Edge.Test.Common.Linux
         public async Task ClearNetworkRules(CancellationToken token)
         {
             Log.Logger.Information("clearing network rules");
-            await this.RunScriptAsync(("../linux/clearNetworkRules.sh", string.Empty), token);
+            await this.RunScriptAsync(("../../../../Microsoft.Azure.Devices.Edge.Test.Common/linux/clearNetworkRules.sh", string.Empty), token);
         }
 
         static string BuildCertCommand(string command, string scriptPath) =>
