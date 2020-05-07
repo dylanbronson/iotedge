@@ -65,6 +65,11 @@ namespace Microsoft.Azure.Devices.Edge.Test.Common
             Log.Verbose(string.Join("\n", output));
         }
 
+        public static async Task ClearNetworkRules(CancellationToken token)
+        {
+            await Current.ClearNetworkRules(token);
+        }
+
         static void CheckFiles(IEnumerable<string> paths, string basePath) => NormalizeFiles(paths, basePath);
 
         public static string[] NormalizeFiles(IEnumerable<string> paths, string basePath)

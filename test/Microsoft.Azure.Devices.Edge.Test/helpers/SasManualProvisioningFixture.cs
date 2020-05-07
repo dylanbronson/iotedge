@@ -51,6 +51,8 @@ namespace Microsoft.Azure.Devices.Edge.Test.Helpers
                     device,
                     startTime,
                     token);
+
+                await OsPlatform.ClearNetworkRules(token);
             }
         }
     }
