@@ -26,7 +26,6 @@ namespace CloudToDeviceMessageTester
             string trackingId,
             TransportType transportType,
             TimeSpan messageDelay,
-            Uri reportingEndpointUrl,
             TimeSpan testDuration,
             TimeSpan testStartDelay)
         {
@@ -36,7 +35,6 @@ namespace CloudToDeviceMessageTester
             Preconditions.CheckArgument(Enum.IsDefined(typeof(CloudToDeviceMessageTesterMode), testMode));
             Preconditions.CheckNonWhiteSpace(deviceId, nameof(deviceId));
             this.TestMode = testMode;
-            this.ReportingEndpointUrl = Preconditions.CheckNotNull(reportingEndpointUrl, nameof(reportingEndpointUrl));
 
             this.SharedSettings = new C2DTestSharedSettings()
             {
@@ -90,7 +88,6 @@ namespace CloudToDeviceMessageTester
                 configuration.GetValue<string>("trackingId"),
                 configuration.GetValue("transportType", TransportType.Amqp),
                 configuration.GetValue("MessageDelay", TimeSpan.FromSeconds(5)),
-                configuration.GetValue<Uri>("ReportingEndpointUrl"),
                 configuration.GetValue("testDuration", TimeSpan.Zero),
                 configuration.GetValue("testStartDelay", TimeSpan.FromMinutes(2)));
         }
@@ -102,8 +99,6 @@ namespace CloudToDeviceMessageTester
         internal C2DTestSenderSettings SenderSettings { get; }
 
         internal CloudToDeviceMessageTesterMode TestMode { get; }
-
-        internal Uri ReportingEndpointUrl { get; }
 
         public override string ToString()
         {
@@ -117,10 +112,8 @@ namespace CloudToDeviceMessageTester
                 { nameof(this.SenderSettings.TestStartDelay), this.SenderSettings.TestStartDelay.ToString() },
                 { nameof(this.SenderSettings.TrackingId), this.SenderSettings.TrackingId },
                 { nameof(this.ReceiverSettings.TransportType), Enum.GetName(typeof(TransportType), this.ReceiverSettings.TransportType) },
-                { nameof(this.SenderSettings.MessageDelay), this.SenderSettings.MessageDelay.ToString() },
-                { nameof(this.ReportingEndpointUrl), this.ReportingEndpointUrl.ToString() },
+                { nameof(this.SenderSettings.MessageDelay), this.SenderSettings.MessageDelay.ToString() }
             };
-
             return $"Settings:{Environment.NewLine}{string.Join(Environment.NewLine, fields.Select(f => $"{f.Key}={f.Value}"))}";
         }
     }

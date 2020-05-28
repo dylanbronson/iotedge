@@ -19,7 +19,7 @@ namespace CloudToDeviceMessageTester
         readonly string deviceId;
         readonly string moduleId;
         readonly TimeSpan testDuration;
-        readonly TestResultReportingClient testResultReportingClient;
+        // readonly TestResultReportingClient testResultReportingClient;
         readonly TimeSpan messageDelay;
         readonly TimeSpan testStartDelay;
         readonly string trackingId;
@@ -29,8 +29,7 @@ namespace CloudToDeviceMessageTester
         internal CloudToDeviceMessageSender(
             ILogger logger,
             C2DTestSharedSettings sharedMetadata,
-            C2DTestSenderSettings senderMetadata,
-            TestResultReportingClient testResultReportingClient)
+            C2DTestSenderSettings senderMetadata)
         {
             this.logger = Preconditions.CheckNotNull(logger, nameof(logger));
             this.iotHubConnectionString = Preconditions.CheckNonWhiteSpace(sharedMetadata.IotHubConnectionString, nameof(sharedMetadata.IotHubConnectionString));
@@ -40,7 +39,7 @@ namespace CloudToDeviceMessageTester
             this.messageDelay = senderMetadata.MessageDelay;
             this.testStartDelay = senderMetadata.TestStartDelay;
             this.testDuration = senderMetadata.TestDuration;
-            this.testResultReportingClient = Preconditions.CheckNotNull(testResultReportingClient, nameof(testResultReportingClient));
+            //this.testResultReportingClient = Preconditions.CheckNotNull(testResultReportingClient, nameof(testResultReportingClient));
         }
 
         public void Dispose() => this.serviceClient?.Dispose();
@@ -63,7 +62,7 @@ namespace CloudToDeviceMessageTester
                 {
                     MessageTestResult testResult = await this.SendCloudToDeviceMessageAsync(batchId, this.trackingId);
                     this.messageCount++;
-                    await ModuleUtil.ReportTestResultAsync(this.testResultReportingClient, this.logger, testResult);
+                    //await ModuleUtil.ReportTestResultAsync(this.testResultReportingClient, this.logger, testResult);
                     await Task.Delay(this.messageDelay, ct);
                 }
                 catch (DeviceMaximumQueueDepthExceededException ex)
@@ -86,6 +85,10 @@ namespace CloudToDeviceMessageTester
             message.Properties.Add(TestConstants.Message.SequenceNumberPropertyName, this.messageCount.ToString());
             message.Properties.Add(TestConstants.Message.BatchIdPropertyName, batchId.ToString());
             message.Properties.Add(TestConstants.Message.TrackingIdPropertyName, trackingId);
+            message.Properties.Add("correlation-id", "corrID");
+            message.Properties.Add("message-id", this.messageCount.ToString());
+
+
             await this.serviceClient.SendAsync(this.deviceId, message);
 
             return new MessageTestResult(this.moduleId + ".send", DateTime.UtcNow)

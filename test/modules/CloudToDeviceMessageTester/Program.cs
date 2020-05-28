@@ -23,7 +23,7 @@ namespace CloudToDeviceMessageTester
             (CancellationTokenSource cts, ManualResetEventSlim completed, Option<object> handler) = ShutdownHandler.Init(TimeSpan.FromSeconds(5), Logger);
 
             ICloudToDeviceMessageTester cloudToDeviceMessageTester = null;
-            TestResultReportingClient reportClient = new TestResultReportingClient() { BaseUrl = Settings.Current.ReportingEndpointUrl.AbsoluteUri };
+            //TestResultReportingClient reportClient = new TestResultReportingClient() { BaseUrl = Settings.Current.ReportingEndpointUrl.AbsoluteUri };
             try
             {
                 if (Settings.Current.TestMode == CloudToDeviceMessageTesterMode.Receiver)
@@ -31,16 +31,16 @@ namespace CloudToDeviceMessageTester
                     cloudToDeviceMessageTester = new CloudToDeviceMessageReceiver(
                         Logger,
                         Settings.Current.SharedSettings,
-                        Settings.Current.ReceiverSettings,
-                        reportClient);
+                        Settings.Current.ReceiverSettings);
+                        // reportClient);
                 }
                 else
                 {
                     cloudToDeviceMessageTester = new CloudToDeviceMessageSender(
                         Logger,
                         Settings.Current.SharedSettings,
-                        Settings.Current.SenderSettings,
-                        reportClient);
+                        Settings.Current.SenderSettings);
+                        // reportClient);
                 }
 
                 await cloudToDeviceMessageTester.StartAsync(cts.Token);

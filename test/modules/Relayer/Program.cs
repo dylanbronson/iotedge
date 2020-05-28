@@ -64,9 +64,9 @@ namespace Relayer
 
         static async Task<MessageResponse> ProcessAndSendMessageAsync(Message message, object userContext)
         {
-            var builder = new UriBuilder(Settings.Current.TestResultCoordinatorUrl);
-            builder.Host = Dns.GetHostEntry(Settings.Current.TestResultCoordinatorUrl.Host).AddressList[0].ToString();
-            Uri testResultCoordinatorUrl = builder.Uri;
+            //var builder = new UriBuilder(Settings.Current.TestResultCoordinatorUrl);
+            //builder.Host = Dns.GetHostEntry(Settings.Current.TestResultCoordinatorUrl.Host).AddressList[0].ToString();
+            //Uri testResultCoordinatorUrl = builder.Uri;
             try
             {
                 if (!(userContext is ModuleClient moduleClient))
@@ -74,78 +74,61 @@ namespace Relayer
                     throw new InvalidOperationException("UserContext doesn't contain expected value");
                 }
 
-                // Must make a new message instead of reusing the old message because of the way the SDK sends messages
-                string trackingId = string.Empty;
-                string batchId = string.Empty;
-                string sequenceNumber = string.Empty;
-                var messageProperties = new List<KeyValuePair<string, string>>();
+                Logger.LogInformation($"Received message with messageId: {message.MessageId} and correlationId {message.CorrelationId}");
+                string correlationId = message.Properties["correlation-id"];
+                string messageId = message.Properties["message-id"];
 
-                foreach (KeyValuePair<string, string> prop in message.Properties)
-                {
-                    switch (prop.Key)
-                    {
-                        case TestConstants.Message.TrackingIdPropertyName:
-                            trackingId = prop.Value ?? string.Empty;
-                            break;
-                        case TestConstants.Message.BatchIdPropertyName:
-                            batchId = prop.Value ?? string.Empty;
-                            break;
-                        case TestConstants.Message.SequenceNumberPropertyName:
-                            sequenceNumber = prop.Value ?? string.Empty;
-                            break;
-                    }
+                Logger.LogInformation($"From properties: messageId: {messageId} and correlationId {correlationId}");
+                await Task.Delay(61000);
 
-                    messageProperties.Add(new KeyValuePair<string, string>(prop.Key, prop.Value));
-                }
+                //if (string.IsNullOrWhiteSpace(trackingId) || string.IsNullOrWhiteSpace(batchId) || string.IsNullOrWhiteSpace(sequenceNumber))
+                //{
+                //    Logger.LogWarning($"Received message missing info: trackingid={trackingId}, batchId={batchId}, sequenceNumber={sequenceNumber}");
+                //    return MessageResponse.Completed;
+                //}
 
-                if (string.IsNullOrWhiteSpace(trackingId) || string.IsNullOrWhiteSpace(batchId) || string.IsNullOrWhiteSpace(sequenceNumber))
-                {
-                    Logger.LogWarning($"Received message missing info: trackingid={trackingId}, batchId={batchId}, sequenceNumber={sequenceNumber}");
-                    return MessageResponse.Completed;
-                }
+                //// Report receiving message successfully to Test Result Coordinator
+                //var testResultReportingClient = new TestResultReportingClient { BaseUrl = testResultCoordinatorUrl.AbsoluteUri };
+                //var testResultReceived = new MessageTestResult(Settings.Current.ModuleId + ".receive", DateTime.UtcNow)
+                //{
+                //    TrackingId = trackingId,
+                //    BatchId = batchId,
+                //    SequenceNumber = sequenceNumber
+                //};
 
-                // Report receiving message successfully to Test Result Coordinator
-                var testResultReportingClient = new TestResultReportingClient { BaseUrl = testResultCoordinatorUrl.AbsoluteUri };
-                var testResultReceived = new MessageTestResult(Settings.Current.ModuleId + ".receive", DateTime.UtcNow)
-                {
-                    TrackingId = trackingId,
-                    BatchId = batchId,
-                    SequenceNumber = sequenceNumber
-                };
+                //await ModuleUtil.ReportTestResultAsync(testResultReportingClient, Logger, testResultReceived);
 
-                await ModuleUtil.ReportTestResultAsync(testResultReportingClient, Logger, testResultReceived);
+                //Logger.LogInformation($"Successfully received message: trackingid={trackingId}, batchId={batchId}, sequenceNumber={sequenceNumber}");
 
-                Logger.LogInformation($"Successfully received message: trackingid={trackingId}, batchId={batchId}, sequenceNumber={sequenceNumber}");
+                //if (!Settings.Current.ReceiveOnly)
+                //{
+                //    byte[] messageBytes = message.GetBytes();
+                //    var messageCopy = new Message(messageBytes);
+                //    messageProperties.ForEach(kvp => messageCopy.Properties.Add(kvp));
+                //    await moduleClient.SendEventAsync(Settings.Current.OutputName, messageCopy);
+                //    // Report sending message successfully to Test Result Coordinator
+                //    var testResultSent = new MessageTestResult(Settings.Current.ModuleId + ".send", DateTime.UtcNow)
+                //    {
+                //        TrackingId = trackingId,
+                //        BatchId = batchId,
+                //        SequenceNumber = sequenceNumber
+                //    };
+                //    await ModuleUtil.ReportTestResultAsync(testResultReportingClient, Logger, testResultSent);
+                //    Logger.LogInformation($"Successfully sent message: trackingid={trackingId}, batchId={batchId}, sequenceNumber={sequenceNumber}");
+                //}
+                //else
+                //{
+                //    int uniqueResultsExpected = Settings.Current.UniqueResultsExpected.Expect<ArgumentException>(() => throw new ArgumentException("Must supply this value if in ReceiveOnly mode"));
+                //    if (!resultsReceived.Contains(sequenceNumber))
+                //    {
+                //        resultsReceived.Add(sequenceNumber);
+                //    }
 
-                if (!Settings.Current.ReceiveOnly)
-                {
-                    byte[] messageBytes = message.GetBytes();
-                    var messageCopy = new Message(messageBytes);
-                    messageProperties.ForEach(kvp => messageCopy.Properties.Add(kvp));
-                    await moduleClient.SendEventAsync(Settings.Current.OutputName, messageCopy);
-                    // Report sending message successfully to Test Result Coordinator
-                    var testResultSent = new MessageTestResult(Settings.Current.ModuleId + ".send", DateTime.UtcNow)
-                    {
-                        TrackingId = trackingId,
-                        BatchId = batchId,
-                        SequenceNumber = sequenceNumber
-                    };
-                    await ModuleUtil.ReportTestResultAsync(testResultReportingClient, Logger, testResultSent);
-                    Logger.LogInformation($"Successfully sent message: trackingid={trackingId}, batchId={batchId}, sequenceNumber={sequenceNumber}");
-                }
-                else
-                {
-                    int uniqueResultsExpected = Settings.Current.UniqueResultsExpected.Expect<ArgumentException>(() => throw new ArgumentException("Must supply this value if in ReceiveOnly mode"));
-                    if (!resultsReceived.Contains(sequenceNumber))
-                    {
-                        resultsReceived.Add(sequenceNumber);
-                    }
-
-                    if (resultsReceived.Count == uniqueResultsExpected)
-                    {
-                        isFinished = true;
-                    }
-                }
+                //    if (resultsReceived.Count == uniqueResultsExpected)
+                //    {
+                //        isFinished = true;
+                //    }
+                //}
             }
             catch (Exception ex)
             {
