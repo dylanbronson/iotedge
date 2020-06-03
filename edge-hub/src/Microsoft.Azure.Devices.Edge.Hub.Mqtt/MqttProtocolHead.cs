@@ -44,6 +44,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Mqtt
         readonly IWebSocketListenerRegistry webSocketListenerRegistry;
         readonly IByteBufferAllocator byteBufferAllocator;
         readonly IProductInfoStore productInfoStore;
+        readonly IDeviceCapabilityModelIdStore deviceCapabilityModelIdStore;
         readonly bool clientCertAuthAllowed;
         readonly SslProtocols sslProtocols;
 
@@ -60,6 +61,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Mqtt
             IWebSocketListenerRegistry webSocketListenerRegistry,
             IByteBufferAllocator byteBufferAllocator,
             IProductInfoStore productInfoStore,
+            IDeviceCapabilityModelIdStore deviceCapabilityModelIdStore,
             bool clientCertAuthAllowed,
             SslProtocols sslProtocols)
         {
@@ -73,6 +75,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Mqtt
             this.byteBufferAllocator = Preconditions.CheckNotNull(byteBufferAllocator);
             this.clientCertAuthAllowed = clientCertAuthAllowed;
             this.productInfoStore = Preconditions.CheckNotNull(productInfoStore, nameof(productInfoStore));
+            this.deviceCapabilityModelIdStore = Preconditions.CheckNotNull(deviceCapabilityModelIdStore, nameof(deviceCapabilityModelIdStore));
             this.sslProtocols = sslProtocols;
         }
 
@@ -153,7 +156,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Mqtt
                     new ActionChannelInitializer<ISocketChannel>(
                         channel =>
                         {
-                            var identityProvider = new DeviceIdentityProvider(this.authenticator, this.clientCredentialsFactory, this.productInfoStore, this.clientCertAuthAllowed);
+                            var identityProvider = new DeviceIdentityProvider(this.authenticator, this.clientCredentialsFactory, this.productInfoStore, this.deviceCapabilityModelIdStore, this.clientCertAuthAllowed);
                             // configure the channel pipeline of the new Channel by adding handlers
                             TlsSettings serverSettings = new ServerTlsSettings(
                                 certificate: this.tlsCertificate,

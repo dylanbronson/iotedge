@@ -117,6 +117,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Service.Modules
             builder.Register(
                     async c =>
                     {
+                        var deviceCapabilityModelIdStore = await c.Resolve<Task<IDeviceCapabilityModelIdStore>>();
                         var productInfoStore = await c.Resolve<Task<IProductInfoStore>>();
                         var settingsProvider = c.Resolve<ISettingsProvider>();
                         var websocketListenerRegistry = c.Resolve<IWebSocketListenerRegistry>();
@@ -138,6 +139,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Service.Modules
                             websocketListenerRegistry,
                             byteBufferAllocator,
                             productInfoStore,
+                            deviceCapabilityModelIdStore,
                             this.clientCertAuthAllowed,
                             this.sslProtocols);
                     })
