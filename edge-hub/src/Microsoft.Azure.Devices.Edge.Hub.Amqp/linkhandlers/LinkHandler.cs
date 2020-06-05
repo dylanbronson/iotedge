@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.LinkHandlers
     {
         readonly IConnectionHandler connectionHandler;
         readonly IProductInfoStore productInfoStore;
+        protected readonly IDeviceCapabilityModelIdStore deviceCapabilityModelIdStore;
 
         protected LinkHandler(
             IIdentity identity,
@@ -23,7 +24,8 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.LinkHandlers
             IDictionary<string, string> boundVariables,
             IConnectionHandler connectionHandler,
             IMessageConverter<AmqpMessage> messageConverter,
-            IProductInfoStore productInfoStore)
+            IProductInfoStore productInfoStore,
+            IDeviceCapabilityModelIdStore deviceCapabilityModelIdStore)
         {
             this.Identity = Preconditions.CheckNotNull(identity, nameof(identity));
             this.MessageConverter = Preconditions.CheckNotNull(messageConverter, nameof(messageConverter));
@@ -33,11 +35,18 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.LinkHandlers
             this.Link.SafeAddClosed(this.OnLinkClosed);
             this.connectionHandler = Preconditions.CheckNotNull(connectionHandler, nameof(connectionHandler));
             this.productInfoStore = Preconditions.CheckNotNull(productInfoStore, nameof(productInfoStore));
+            this.deviceCapabilityModelIdStore = Preconditions.CheckNotNull(deviceCapabilityModelIdStore, nameof(deviceCapabilityModelIdStore));
 
             string clientVersion = null;
             if (this.Link.Settings?.Properties?.TryGetValue(IotHubAmqpProperty.ClientVersion, out clientVersion) ?? false)
             {
                 this.ClientVersion = Option.Maybe(clientVersion);
+            }
+
+            string deviceCapabilityModelId = null;
+            if (this.Link.Settings?.Properties?.TryGetValue(IotHubAmqpProperty.DeviceCapabilityModelId, out deviceCapabilityModelId) ?? false)
+            {
+                this.DeviceCapabilityModelId = Option.Maybe(deviceCapabilityModelId);
             }
         }
 
@@ -60,6 +69,8 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.LinkHandlers
         protected IDictionary<string, string> BoundVariables { get; }
 
         protected Option<string> ClientVersion { get; }
+
+        protected Option<string> DeviceCapabilityModelId { get; }
 
         public async Task OpenAsync(TimeSpan timeout)
         {

@@ -24,8 +24,9 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.LinkHandlers
             IDictionary<string, string> boundVariables,
             IConnectionHandler connectionHandler,
             IMessageConverter<AmqpMessage> messageConverter,
-            IProductInfoStore productInfoStore)
-            : base(identity, link, requestUri, boundVariables, connectionHandler, messageConverter, productInfoStore)
+            IProductInfoStore productInfoStore,
+            IDeviceCapabilityModelIdStore deviceCapabilityModelIdStore)
+            : base(identity, link, requestUri, boundVariables, connectionHandler, messageConverter, productInfoStore, deviceCapabilityModelIdStore)
         {
             Preconditions.CheckArgument(!link.IsReceiver, $"Link {requestUri} cannot send");
             this.SendingAmqpLink = link;
@@ -73,7 +74,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.LinkHandlers
         {
         }
 
-        protected override Task OnOpenAsync(TimeSpan timeout)
+        protected override async Task OnOpenAsync(TimeSpan timeout)
         {
             switch (this.QualityOfService)
             {
@@ -101,7 +102,12 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.LinkHandlers
                     break;
             }
 
-            return Task.CompletedTask;
+            string deviceCapabilityModelId = await deviceCapabilityModelIdStore.GetDeviceCapabilityModelId(this.Identity.Id);
+            if (string.IsNullOrEmpty(deviceCapabilityModelId))
+            {
+                this.SendingAmqpLink.Settings.
+                // Set c sharp sdk AMQP transport setting - how?
+            }
         }
 
         internal static FeedbackStatus GetFeedbackStatus(Delivery delivery)
