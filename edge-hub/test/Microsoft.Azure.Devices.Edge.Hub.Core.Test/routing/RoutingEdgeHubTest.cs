@@ -416,7 +416,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Test.Routing
             // ICloudConnectionProvider
             var cloudConnection = Mock.Of<ICloudConnection>(c => c.IsActive && c.CloudProxy == Option.Some(cloudProxy.Object));
             var cloudConnectionProvider = new Mock<ICloudConnectionProvider>();
-            cloudConnectionProvider.Setup(c => c.Connect(It.IsAny<IIdentity>(), It.IsAny<Action<string, CloudConnectionStatus>>()))
+            cloudConnectionProvider.Setup(c => c.Connect(It.IsAny<IIdentity>(), Option.None<string>(), It.IsAny<Action<string, CloudConnectionStatus>>()))
                 .ReturnsAsync(Try.Success(cloudConnection));
 
             var deviceConnectivitymanager = Mock.Of<IDeviceConnectivityManager>();

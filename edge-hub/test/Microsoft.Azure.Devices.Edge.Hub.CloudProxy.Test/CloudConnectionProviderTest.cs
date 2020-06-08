@@ -232,7 +232,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy.Test
             cloudConnectionProvider.BindEdgeHub(edgeHub);
 
             // Act
-            Try<ICloudConnection> cloudProxy = await cloudConnectionProvider.Connect(deviceIdentity, null);
+            Try<ICloudConnection> cloudProxy = await cloudConnectionProvider.Connect(deviceIdentity, Option.None<string>(), null);
 
             // Assert
             Assert.True(cloudProxy.Success);
@@ -275,7 +275,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy.Test
             cloudConnectionProvider.BindEdgeHub(edgeHub);
 
             // Act
-            Try<ICloudConnection> cloudProxy = await cloudConnectionProvider.Connect(deviceIdentity, null);
+            Try<ICloudConnection> cloudProxy = await cloudConnectionProvider.Connect(deviceIdentity, Option.None<string>(), null);
 
             // Assert
             Assert.True(cloudProxy.Success);
@@ -318,7 +318,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy.Test
             cloudConnectionProvider.BindEdgeHub(edgeHub);
 
             // Act
-            Try<ICloudConnection> cloudProxy = await cloudConnectionProvider.Connect(deviceIdentity, null);
+            Try<ICloudConnection> cloudProxy = await cloudConnectionProvider.Connect(deviceIdentity, Option.None<string>(), null);
 
             // Assert
             Assert.True(cloudProxy.Success);
@@ -331,7 +331,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy.Test
         [MemberData(nameof(UpstreamProtocolTransportSettingsData))]
         public void GetTransportSettingsTest(Option<UpstreamProtocol> upstreamProtocol, int connectionPoolSize, Option<IWebProxy> proxy, ITransportSettings[] expectedTransportSettingsList, bool useServerHeartbeat)
         {
-            ITransportSettings[] transportSettingsList = CloudConnectionProvider.GetTransportSettings(upstreamProtocol, connectionPoolSize, proxy, useServerHeartbeat);
+            ITransportSettings[] transportSettingsList = CloudConnectionProvider.GetTransportSettings(upstreamProtocol, connectionPoolSize, proxy, useServerHeartbeat, Option.None<string>());
 
             Assert.NotNull(transportSettingsList);
             Assert.Equal(expectedTransportSettingsList.Length, transportSettingsList.Length);

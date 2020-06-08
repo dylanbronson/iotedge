@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Cloud
         /// <summary>
         /// Creates a connection to the cloud for a client in device scope
         /// </summary>
-        Task<Try<ICloudConnection>> Connect(IIdentity identity, Action<string, CloudConnectionStatus> connectionStatusChangedHandler);
+        Task<Try<ICloudConnection>> Connect(IIdentity identity, Option<string> deviceCapabilityModelId, Action<string, CloudConnectionStatus> connectionStatusChangedHandler);
 
         /// <summary>
         /// Binds the IEdgeHub instance to the object

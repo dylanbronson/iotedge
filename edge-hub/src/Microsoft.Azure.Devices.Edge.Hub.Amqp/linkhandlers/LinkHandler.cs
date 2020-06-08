@@ -39,6 +39,12 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.LinkHandlers
             {
                 this.ClientVersion = Option.Maybe(clientVersion);
             }
+
+            string deviceCapabilityModelId = null;
+            if (this.Link.Settings?.Properties?.TryGetValue(IotHubAmqpProperty.DeviceCapabilityModelId, out deviceCapabilityModelId) ?? false)
+            {
+                this.DeviceCapabilityModelId = Option.Maybe(deviceCapabilityModelId);
+            }
         }
 
         public IAmqpLink Link { get; }
@@ -60,6 +66,8 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.LinkHandlers
         protected IDictionary<string, string> BoundVariables { get; }
 
         protected Option<string> ClientVersion { get; }
+
+        public Option<string> DeviceCapabilityModelId { get; }
 
         public async Task OpenAsync(TimeSpan timeout)
         {

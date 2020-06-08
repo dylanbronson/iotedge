@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Routing
         {
             if (CloudEndpointName.Equals(endpoint, StringComparison.OrdinalIgnoreCase))
             {
-                return this.cache.GetOrAdd(CloudEndpointName, s => new CloudEndpoint("iothub", id => this.connectionManager.GetCloudConnection(id), this.messageConverter, this.maxBatchSize, this.upstreamFanOutFactor));
+                return this.cache.GetOrAdd(CloudEndpointName, s => new CloudEndpoint("iothub", (id, dcmid) => this.connectionManager.GetCloudConnection(id, dcmid), this.messageConverter, this.maxBatchSize, this.upstreamFanOutFactor));
             }
             else
             {
