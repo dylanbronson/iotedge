@@ -14,6 +14,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.Test
     using Microsoft.Azure.Devices.Edge.Hub.Core.Device;
     using Microsoft.Azure.Devices.Edge.Hub.Core.Identity;
     using Microsoft.Azure.Devices.Edge.Storage;
+    using Microsoft.Azure.Devices.Edge.Util;
     using Microsoft.Azure.Devices.Edge.Util.Test.Common;
     using Moq;
     using Xunit;
@@ -56,7 +57,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.Test
             var deviceListener = Mock.Of<IDeviceListener>();
             Mock.Get(deviceListener).Setup(d => d.ProcessDeviceMessageBatchAsync(It.IsAny<IEnumerable<IMessage>>())).Callback<IEnumerable<IMessage>>(m => receivedMessages = m);
 
-            var connectionHandler = Mock.Of<IConnectionHandler>(c => c.GetDeviceListener() == Task.FromResult(deviceListener));
+            var connectionHandler = Mock.Of<IConnectionHandler>(c => c.GetDeviceListener(Option.None<string>()) == Task.FromResult(deviceListener));
             var amqpAuthenticator = new Mock<IAmqpAuthenticator>();
             amqpAuthenticator.Setup(c => c.AuthenticateAsync("d1")).ReturnsAsync(true);
             Mock<ICbsNode> cbsNodeMock = amqpAuthenticator.As<ICbsNode>();
@@ -130,7 +131,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.Test
                 .Callback<IEnumerable<IMessage>>(m => receivedMessages = m)
                 .Returns(Task.CompletedTask);
 
-            var connectionHandler = Mock.Of<IConnectionHandler>(c => c.GetDeviceListener() == Task.FromResult(deviceListener));
+            var connectionHandler = Mock.Of<IConnectionHandler>(c => c.GetDeviceListener(Option.None<string>()) == Task.FromResult(deviceListener));
             var amqpAuthenticator = new Mock<IAmqpAuthenticator>();
             amqpAuthenticator.Setup(c => c.AuthenticateAsync("d1")).ReturnsAsync(true);
             Mock<ICbsNode> cbsNodeMock = amqpAuthenticator.As<ICbsNode>();
@@ -217,7 +218,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.Test
             Mock.Get(deviceListener).Setup(d => d.ProcessDeviceMessageBatchAsync(It.IsAny<IEnumerable<IMessage>>()))
                 .Returns(Task.CompletedTask);
 
-            var connectionHandler = Mock.Of<IConnectionHandler>(c => c.GetDeviceListener() == Task.FromResult(deviceListener));
+            var connectionHandler = Mock.Of<IConnectionHandler>(c => c.GetDeviceListener(Option.None<string>()) == Task.FromResult(deviceListener));
             var amqpAuthenticator = new Mock<IAmqpAuthenticator>();
             amqpAuthenticator.Setup(c => c.AuthenticateAsync("d1")).ReturnsAsync(true);
             Mock<ICbsNode> cbsNodeMock = amqpAuthenticator.As<ICbsNode>();
@@ -306,7 +307,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.Test
 
             var deviceListener = Mock.Of<IDeviceListener>();
 
-            var connectionHandler = Mock.Of<IConnectionHandler>(c => c.GetDeviceListener() == Task.FromResult(deviceListener));
+            var connectionHandler = Mock.Of<IConnectionHandler>(c => c.GetDeviceListener(Option.None<string>()) == Task.FromResult(deviceListener));
             var amqpAuthenticator = new Mock<IAmqpAuthenticator>();
             amqpAuthenticator.Setup(c => c.AuthenticateAsync("d1")).ReturnsAsync(true);
             Mock<ICbsNode> cbsNodeMock = amqpAuthenticator.As<ICbsNode>();

@@ -28,15 +28,18 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Device
         readonly AsyncLock serializeMessagesLock = new AsyncLock();
         IDeviceProxy underlyingProxy;
 
-        public DeviceMessageHandler(IIdentity identity, IEdgeHub edgeHub, IConnectionManager connectionManager, TimeSpan messageAckTimeout)
+        public DeviceMessageHandler(IIdentity identity, IEdgeHub edgeHub, IConnectionManager connectionManager, TimeSpan messageAckTimeout, Option<string> deviceCapabilityModelId)
         {
             this.Identity = Preconditions.CheckNotNull(identity, nameof(identity));
             this.edgeHub = Preconditions.CheckNotNull(edgeHub, nameof(edgeHub));
             this.connectionManager = Preconditions.CheckNotNull(connectionManager, nameof(connectionManager));
             this.messageAckTimeout = messageAckTimeout;
+            this.DeviceCapabilityModelId = deviceCapabilityModelId;
         }
 
         public IIdentity Identity { get; }
+
+        public Option<string> DeviceCapabilityModelId { get; }
 
         public Task ProcessMethodResponseAsync(IMessage message)
         {
@@ -179,9 +182,20 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Device
             }
         }
 
-        public Task ProcessDeviceMessageAsync(IMessage message) => this.edgeHub.ProcessDeviceMessage(this.Identity, message);
+        public Task ProcessDeviceMessageAsync(IMessage message)
+        {
+            this.DeviceCapabilityModelId.ForEach(dcmid => message.SystemProperties[SystemProperties.DeviceCapabilityModelId] = dcmid);
+            return this.edgeHub.ProcessDeviceMessage(this.Identity, message);
+        }
 
-        public Task ProcessDeviceMessageBatchAsync(IEnumerable<IMessage> messages) => this.edgeHub.ProcessDeviceMessageBatch(this.Identity, messages);
+        public Task ProcessDeviceMessageBatchAsync(IEnumerable<IMessage> messages)
+        {
+            foreach(IMessage message in messages)
+            {
+                this.DeviceCapabilityModelId.ForEach(dcmid => message.SystemProperties[SystemProperties.DeviceCapabilityModelId] = dcmid);
+            }
+            return this.edgeHub.ProcessDeviceMessageBatch(this.Identity, messages);
+        }
 
         public async Task UpdateReportedPropertiesAsync(IMessage reportedPropertiesMessage, string correlationId)
         {

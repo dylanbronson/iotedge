@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.LinkHandlers
                 throw new InvalidOperationException($"Unable to open {this.Type} link as the connection could not be authenticated");
             }
 
-            this.DeviceListener = await this.connectionHandler.GetDeviceListener();
+            this.DeviceListener = await this.connectionHandler.GetDeviceListener(this.DeviceCapabilityModelId);
 
             await this.OnOpenAsync(timeout);
             await this.connectionHandler.RegisterLinkHandler(this);

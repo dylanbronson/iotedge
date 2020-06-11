@@ -29,6 +29,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
         readonly ICredentialsCache credentialsCache;
         readonly IIdentityProvider identityProvider;
         readonly IDeviceConnectivityManager connectivityManager;
+        ConcurrentDictionary<string, string> deviceIdentityToCurrentDeviceCapabilityModelId = new ConcurrentDictionary<string, string>();
 
         public ConnectionManager(
             ICloudConnectionProvider cloudConnectionProvider,
@@ -106,6 +107,45 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
         {
             IIdentity identity = this.identityProvider.Create(Preconditions.CheckNonWhiteSpace(id, nameof(id)));
             ConnectedDevice device = this.GetOrCreateConnectedDevice(identity);
+
+
+            this.deviceIdentityToCurrentDeviceCapabilityModelId.TryGetValue(id, out string currentDcmid);
+            if (!string.IsNullOrEmpty(currentDcmid))
+            {
+                if (deviceCapabilityModelId.HasValue)
+                {
+                    if (!deviceCapabilityModelId.OrDefault().Equals(currentDcmid))
+                    {
+                        // If we encounter a new dcmid for an identity, update dictionary and close cloud connection for that identity.
+                        // TODO: Make a method that only removes cloud connection.
+                        this.deviceIdentityToCurrentDeviceCapabilityModelId.TryAdd(id, deviceCapabilityModelId.OrDefault());
+                        // catch exception here if tryadd fails
+
+
+                        // // Could this potentially be a race condition from some other part of edge trying to make a new cloud connection?
+                        await this.RemoveDeviceConnection(device, true); 
+                        deviceCapabilityModelId = Option.Some(currentDcmid);
+                    }
+                    else
+                    {
+                        // do nothing - allow the Option.Some(deviceCapabilityModelId) to flow through the GetOrCreateCloudConnection process
+                    }
+                }
+                else
+                {
+                    // do nothing - allow the Option.None to flow through the GetOrCreateCloudConnection flow
+                    // This section is here for clarity. Remove before any PR
+                }
+            }
+            else // if there is no dcmid for that identity, add it if it exists
+            {
+                await deviceCapabilityModelId.ForEachAsync(async dcmid =>
+                {
+                    this.deviceIdentityToCurrentDeviceCapabilityModelId.TryAdd(id, dcmid);
+                    // We really just want to remove the cloud connection in this case
+                    await this.RemoveDeviceConnection(device, true);
+                });
+            }
 
             Try<ICloudConnection> cloudConnectionTry = await device.GetOrCreateCloudConnection(
                 c => this.ConnectToCloud(c.Identity, deviceCapabilityModelId, this.CloudConnectionStatusChangedHandler));

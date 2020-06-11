@@ -20,9 +20,9 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
             this.messageAckTimeout = messageAckTimeout;
         }
 
-        public Task<IDeviceListener> GetDeviceListenerAsync(IIdentity identity)
+        public Task<IDeviceListener> GetDeviceListenerAsync(IIdentity identity, Option<string> deviceCapabilityModelId)
         {
-            IDeviceListener deviceListener = new DeviceMessageHandler(Preconditions.CheckNotNull(identity, nameof(identity)), this.edgeHub, this.connectionManager, this.messageAckTimeout);
+            IDeviceListener deviceListener = new DeviceMessageHandler(Preconditions.CheckNotNull(identity, nameof(identity)), this.edgeHub, this.connectionManager, this.messageAckTimeout, deviceCapabilityModelId);
             return Task.FromResult(deviceListener);
         }
 

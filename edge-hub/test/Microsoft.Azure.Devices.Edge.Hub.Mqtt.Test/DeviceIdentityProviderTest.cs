@@ -7,6 +7,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Mqtt.Test
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Edge.Hub.Core;
     using Microsoft.Azure.Devices.Edge.Hub.Core.Identity;
+    using Microsoft.Azure.Devices.Edge.Util;
     using Microsoft.Azure.Devices.Edge.Util.Test.Common;
     using Microsoft.Azure.Devices.ProtocolGateway.Identity;
     using Moq;
@@ -145,7 +146,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Mqtt.Test
         [Unit]
         public void ParseUsernameTest(string username, string expectedDeviceId, string expectedModuleId, string expectedDeviceClientType)
         {
-            (string deviceId, string moduleId, string deviceClientType) = DeviceIdentityProvider.ParseUserName(username);
+            (string deviceId, string moduleId, string deviceClientType, _) = DeviceIdentityProvider.ParseUserName(username);
             Assert.Equal(expectedDeviceId, deviceId);
             Assert.Equal(expectedModuleId, moduleId);
             Assert.Equal(expectedDeviceClientType, deviceClientType);

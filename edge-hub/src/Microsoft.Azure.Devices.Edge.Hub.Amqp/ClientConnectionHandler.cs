@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp
             this.connectionProvider = Preconditions.CheckNotNull(connectionProvider, nameof(connectionProvider));
         }
 
-        public Task<IDeviceListener> GetDeviceListener()
+        public Task<IDeviceListener> GetDeviceListener(Option<string> deviceCapabilityModelId)
         {
             return this.deviceListener.Map(d => Task.FromResult(d))
                 .GetOrElse(
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp
                                 .GetOrElse(
                                     async () =>
                                     {
-                                        IDeviceListener dl = await this.connectionProvider.GetDeviceListenerAsync(this.identity);
+                                        IDeviceListener dl = await this.connectionProvider.GetDeviceListenerAsync(this.identity, deviceCapabilityModelId);
                                         var deviceProxy = new DeviceProxy(this, this.identity);
                                         dl.BindDeviceProxy(deviceProxy);
                                         this.deviceListener = Option.Some(dl);

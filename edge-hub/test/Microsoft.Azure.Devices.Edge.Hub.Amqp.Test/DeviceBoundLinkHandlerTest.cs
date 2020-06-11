@@ -11,6 +11,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.Test
     using Microsoft.Azure.Devices.Edge.Hub.Core;
     using Microsoft.Azure.Devices.Edge.Hub.Core.Device;
     using Microsoft.Azure.Devices.Edge.Hub.Core.Identity;
+    using Microsoft.Azure.Devices.Edge.Util;
     using Microsoft.Azure.Devices.Edge.Util.Test.Common;
     using Moq;
     using Xunit;
@@ -72,7 +73,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.Test
                 .Callback<string, FeedbackStatus>((m, s) => feedbackStatus = s)
                 .Returns(Task.CompletedTask);
             AmqpMessage receivedAmqpMessage = null;
-            var connectionHandler = Mock.Of<IConnectionHandler>(c => c.GetDeviceListener() == Task.FromResult(deviceListener.Object));
+            var connectionHandler = Mock.Of<IConnectionHandler>(c => c.GetDeviceListener(Option.None<string>()) == Task.FromResult(deviceListener.Object));
             var amqpAuthenticator = new Mock<IAmqpAuthenticator>();
             amqpAuthenticator.Setup(c => c.AuthenticateAsync("d1")).ReturnsAsync(true);
             Mock<ICbsNode> cbsNodeMock = amqpAuthenticator.As<ICbsNode>();

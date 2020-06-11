@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.LinkHandlers
                     };
 
                 List<IMessage> outgoingMessages = messages.Select(m => this.MessageConverter.ToMessage(m)).ToList();
-                outgoingMessages.ForEach(m => this.AddMessageSystemProperties(m, this.DeviceCapabilityModelId));
+                outgoingMessages.ForEach(this.AddMessageSystemProperties);
                 await this.DeviceListener.ProcessDeviceMessageBatchAsync(outgoingMessages);
                 Events.ProcessedMessages(messages, this);
             }
@@ -92,12 +92,11 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.LinkHandlers
             return outputMessages;
         }
 
-        void AddMessageSystemProperties(IMessage message, Option<string> deviceCapabilityModelId)
+        void AddMessageSystemProperties(IMessage message)
         {
             if (this.Identity is IDeviceIdentity deviceIdentity)
             {
                 message.SystemProperties[SystemProperties.ConnectionDeviceId] = deviceIdentity.DeviceId;
-                deviceCapabilityModelId.ForEach(d => message.SystemProperties[SystemProperties.DeviceCapabilityModelId] = d);
             }
 
             if (this.Identity is IModuleIdentity moduleIdentity)

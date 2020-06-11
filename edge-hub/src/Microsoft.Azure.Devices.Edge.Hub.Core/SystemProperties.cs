@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
         public const string Operation = "operation";
         public const string SequenceNumber = "sequenceNumber";
         public const string InterfaceId = "iothub-interface-id";
-        public const string DeviceCapabilityModelId = "digital-twin-model-id";
+        public const string DeviceCapabilityModelId = "deviceCapabilityModelId";
 
         public static readonly Dictionary<string, string> IncomingSystemPropertiesMap = new Dictionary<string, string>
         {
