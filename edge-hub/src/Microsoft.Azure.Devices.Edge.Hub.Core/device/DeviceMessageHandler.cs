@@ -34,6 +34,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Device
             this.edgeHub = Preconditions.CheckNotNull(edgeHub, nameof(edgeHub));
             this.connectionManager = Preconditions.CheckNotNull(connectionManager, nameof(connectionManager));
             this.messageAckTimeout = messageAckTimeout;
+            deviceCapabilityModelId.ForEach(dcmid => Events.PrintMe($"Adding DCMID to message: {dcmid}"), () => Events.PrintMe("No DCMID"));
             this.DeviceCapabilityModelId = deviceCapabilityModelId;
         }
 
@@ -184,6 +185,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Device
 
         public Task ProcessDeviceMessageAsync(IMessage message)
         {
+            this.DeviceCapabilityModelId.ForEach(dcmid => Events.PrintMe($"Adding DCMID to message: {dcmid}"), () => Events.PrintMe("No DCMID"));
             this.DeviceCapabilityModelId.ForEach(dcmid => message.SystemProperties[SystemProperties.DeviceCapabilityModelId] = dcmid);
             return this.edgeHub.ProcessDeviceMessage(this.Identity, message);
         }
@@ -192,6 +194,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Device
         {
             foreach(IMessage message in messages)
             {
+                this.DeviceCapabilityModelId.ForEach(dcmid => Events.PrintMe($"Adding DCMID to message: {dcmid}"), () => Events.PrintMe("No DCMID"));
                 this.DeviceCapabilityModelId.ForEach(dcmid => message.SystemProperties[SystemProperties.DeviceCapabilityModelId] = dcmid);
             }
             return this.edgeHub.ProcessDeviceMessageBatch(this.Identity, messages);
@@ -289,6 +292,11 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Device
                 ReceivedC2DMessageWithSameToken,
                 ReceivedC2DFeedbackMessage,
                 UnknownFeedbackMessage
+            }
+
+            public static void PrintMe(string printMe)
+            {
+                Log.LogDebug("DRB - " + printMe);
             }
 
             public static void BindDeviceProxy(IIdentity identity)

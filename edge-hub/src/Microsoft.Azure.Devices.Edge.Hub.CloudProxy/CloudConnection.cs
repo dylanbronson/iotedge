@@ -24,12 +24,14 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
         readonly bool closeOnIdleTimeout;
         readonly TimeSpan operationTimeout;
         readonly string productInfo;
+        readonly Option<string> deviceCapabilityModelId;
         Option<ICloudProxy> cloudProxy;
 
         protected CloudConnection(
             IIdentity identity,
             Action<string, CloudConnectionStatus> connectionStatusChangedHandler,
             ITransportSettings[] transportSettings,
+            Option<string> deviceCapabilityModelId,
             IMessageConverterProvider messageConverterProvider,
             IClientProvider clientProvider,
             ICloudListener cloudListener,
@@ -41,6 +43,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
             this.Identity = Preconditions.CheckNotNull(identity, nameof(identity));
             this.ConnectionStatusChangedHandler = connectionStatusChangedHandler;
             this.transportSettingsList = Preconditions.CheckNotNull(transportSettings, nameof(transportSettings));
+            this.deviceCapabilityModelId = deviceCapabilityModelId;
             this.messageConverterProvider = Preconditions.CheckNotNull(messageConverterProvider, nameof(messageConverterProvider));
             this.clientProvider = Preconditions.CheckNotNull(clientProvider, nameof(clientProvider));
             this.cloudListener = Preconditions.CheckNotNull(cloudListener, nameof(cloudListener));
@@ -67,6 +70,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
             IIdentity identity,
             Action<string, CloudConnectionStatus> connectionStatusChangedHandler,
             ITransportSettings[] transportSettings,
+            Option<string> deviceCapabilityModelId,
             IMessageConverterProvider messageConverterProvider,
             IClientProvider clientProvider,
             ICloudListener cloudListener,
@@ -81,6 +85,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
                 identity,
                 connectionStatusChangedHandler,
                 transportSettings,
+                deviceCapabilityModelId,
                 messageConverterProvider,
                 clientProvider,
                 cloudListener,
@@ -88,6 +93,9 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
                 closeOnIdleTimeout,
                 operationTimeout,
                 productInfo);
+            deviceCapabilityModelId.ForEach(dcmid =>
+                Events.PrintMe($"Created cloud connection with dcmid {dcmid}"),
+                () => Events.PrintMe("Created cloud connection without dcmid"));
             ICloudProxy cloudProxy = await cloudConnection.CreateNewCloudProxyAsync(tokenProvider);
             cloudConnection.cloudProxy = Option.Some(cloudProxy);
             return cloudConnection;
@@ -114,7 +122,14 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
         async Task<IClient> ConnectToIoTHub(ITokenProvider newTokenProvider)
         {
             Events.AttemptingConnectionWithTransport(this.transportSettingsList, this.Identity);
-            IClient client = this.clientProvider.Create(this.Identity, newTokenProvider, this.transportSettingsList);
+
+            this.deviceCapabilityModelId.ForEach(
+                dcmid => Events.PrintMe($"Connecting with dcmid {dcmid}"),
+                () => Events.PrintMe("Connecting without dcmid"));
+
+            IClient client = this.deviceCapabilityModelId.Match(
+                dcmid => this.clientProvider.Create(this.Identity, newTokenProvider, transportSettingsList, dcmid),
+                () => this.clientProvider.Create(this.Identity, newTokenProvider, transportSettingsList));
 
             client.SetOperationTimeoutInMilliseconds((uint)this.operationTimeout.TotalMilliseconds);
             client.SetConnectionStatusChangedHandler(this.InternalConnectionStatusChangesHandler);
@@ -159,6 +174,11 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
             {
                 AttemptingTransport = IdStart,
                 TransportConnected
+            }
+
+            public static void PrintMe(string printMe)
+            {
+                Log.LogDebug("DRB - " + printMe);
             }
 
             public static void AttemptingConnectionWithTransport(ITransportSettings[] transportSettings, IIdentity identity)

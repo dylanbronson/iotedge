@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
             this.edgeHub = Option.Some(Preconditions.CheckNotNull(edgeHubInstance, nameof(edgeHubInstance)));
         }
 
-        public async Task<Try<ICloudConnection>> Connect(IClientCredentials clientCredentials, Action<string, CloudConnectionStatus> connectionStatusChangedHandler)
+        public async Task<Try<ICloudConnection>> Connect(IClientCredentials clientCredentials, Option<string> deviceCapabilityModelId, Action<string, CloudConnectionStatus> connectionStatusChangedHandler)
         {
             Preconditions.CheckNotNull(clientCredentials, nameof(clientCredentials));
 
@@ -86,8 +86,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
                     this.upstreamProtocol,
                     this.connectionPoolSize,
                     this.proxy,
-                    this.useServerHeartbeat,
-                    Option.None<string>());
+                    this.useServerHeartbeat);
 
                 if (this.edgeHubIdentity.Id.Equals(clientCredentials.Identity.Id))
                 {
@@ -95,6 +94,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
                         clientCredentials.Identity,
                         connectionStatusChangedHandler,
                         transportSettings,
+                        deviceCapabilityModelId,
                         this.messageConverterProvider,
                         this.clientProvider,
                         cloudListener,
@@ -112,6 +112,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
                         clientTokenCredentails,
                         connectionStatusChangedHandler,
                         transportSettings,
+                        deviceCapabilityModelId,
                         this.messageConverterProvider,
                         this.clientProvider,
                         cloudListener,
@@ -137,7 +138,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
         public async Task<Try<ICloudConnection>> Connect(IIdentity identity, Option<string> deviceCapabilityModelId, Action<string, CloudConnectionStatus> connectionStatusChangedHandler)
         {
             Preconditions.CheckNotNull(identity, nameof(identity));
-
+            deviceCapabilityModelId.ForEach(dcmid => Events.PrintMe($"Connecting with DCMID1 {dcmid}"), () => Events.PrintMe("Connecting without dcmid1"));
             try
             {
                 var cloudListener = new CloudListener(this.edgeHub.Expect(() => new InvalidOperationException("EdgeHub reference should not be null")), identity.Id);
@@ -147,18 +148,18 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
                     this.upstreamProtocol,
                     this.connectionPoolSize,
                     this.proxy,
-                    this.useServerHeartbeat,
-                    deviceCapabilityModelId);
+                    this.useServerHeartbeat);
                 return await serviceIdentity
                     .Map(
                         async si =>
                         {
-                            Events.CreatingCloudConnectionOnBehalfOf(identity);
+                            Events.CreatingCloudConnectionOnBehalfOf(identity, deviceCapabilityModelId);
                             string productInfo = await this.productInfoStore.GetEdgeProductInfo(identity.Id);
                             ICloudConnection cc = await CloudConnection.Create(
                                 identity,
                                 connectionStatusChangedHandler,
                                 transportSettings,
+                                deviceCapabilityModelId,
                                 this.messageConverterProvider,
                                 this.clientProvider,
                                 cloudListener,
@@ -174,9 +175,10 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
                         async () =>
                         {
                             Events.ServiceIdentityNotFound(identity);
+                            deviceCapabilityModelId.ForEach(dcmid => Events.PrintMe("using client credentials with dcmid"), () => Events.PrintMe("using client credentials without dcmid"));
                             Option<IClientCredentials> clientCredentials = await this.credentialsCache.Get(identity);
                             return await clientCredentials
-                                .Map(cc => this.Connect(cc, connectionStatusChangedHandler))
+                                .Map(cc => this.Connect(cc, deviceCapabilityModelId, connectionStatusChangedHandler))
                                 .GetOrElse(() => throw new InvalidOperationException($"Unable to find identity {identity.Id} in device scopes cache or credentials cache"));
                         });
             }
@@ -187,7 +189,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
             }
         }
 
-        static ITransportSettings[] GetAmqpTransportSettings(TransportType type, int connectionPoolSize, Option<IWebProxy> proxy, bool useServerHeartbeat, Option<string> deviceCapabilityModelId)
+        static ITransportSettings[] GetAmqpTransportSettings(TransportType type, int connectionPoolSize, Option<IWebProxy> proxy, bool useServerHeartbeat)
         {
             var settings = new AmqpTransportSettings(type)
             {
@@ -204,27 +206,17 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
             }
 
             proxy.ForEach(p => settings.Proxy = p);
-
-            deviceCapabilityModelId.ForEach(dcmid =>
-                settings.GetType()
-                    .GetProperty("DeviceCapabilityModelId", BindingFlags.NonPublic | BindingFlags.Instance)
-                    .SetValue(settings, dcmid));
-
             return new ITransportSettings[] { settings };
         }
 
-        static ITransportSettings[] GetMqttTransportSettings(TransportType type, Option<IWebProxy> proxy, Option<string> deviceCapabilityModelId)
+        static ITransportSettings[] GetMqttTransportSettings(TransportType type, Option<IWebProxy> proxy)
         {
             var settings = new MqttTransportSettings(type);
             proxy.ForEach(p => settings.Proxy = p);
-            deviceCapabilityModelId.ForEach(dcmid =>
-                settings.GetType()
-                    .GetProperty("DeviceCapabilityModelId", BindingFlags.NonPublic | BindingFlags.Instance)
-                    .SetValue(settings, dcmid));
             return new ITransportSettings[] { settings };
         }
 
-        internal static ITransportSettings[] GetTransportSettings(Option<UpstreamProtocol> upstreamProtocol, int connectionPoolSize, Option<IWebProxy> proxy, bool useServerHeartbeat, Option<string> deviceCapabilityModelid)
+        internal static ITransportSettings[] GetTransportSettings(Option<UpstreamProtocol> upstreamProtocol, int connectionPoolSize, Option<IWebProxy> proxy, bool useServerHeartbeat)
         {
             return upstreamProtocol
                 .Map(
@@ -233,23 +225,23 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
                         switch (up)
                         {
                             case UpstreamProtocol.Amqp:
-                                return GetAmqpTransportSettings(TransportType.Amqp_Tcp_Only, connectionPoolSize, proxy, useServerHeartbeat, deviceCapabilityModelid);
+                                return GetAmqpTransportSettings(TransportType.Amqp_Tcp_Only, connectionPoolSize, proxy, useServerHeartbeat);
 
                             case UpstreamProtocol.AmqpWs:
-                                return GetAmqpTransportSettings(TransportType.Amqp_WebSocket_Only, connectionPoolSize, proxy, useServerHeartbeat, deviceCapabilityModelid);
+                                return GetAmqpTransportSettings(TransportType.Amqp_WebSocket_Only, connectionPoolSize, proxy, useServerHeartbeat);
 
                             case UpstreamProtocol.Mqtt:
-                                return GetMqttTransportSettings(TransportType.Mqtt_Tcp_Only, proxy, deviceCapabilityModelid);
+                                return GetMqttTransportSettings(TransportType.Mqtt_Tcp_Only, proxy);
 
                             case UpstreamProtocol.MqttWs:
-                                return GetMqttTransportSettings(TransportType.Mqtt_WebSocket_Only, proxy, deviceCapabilityModelid);
+                                return GetMqttTransportSettings(TransportType.Mqtt_WebSocket_Only, proxy);
 
                             default:
                                 throw new InvalidEnumArgumentException($"Unsupported transport type {up}");
                         }
                     })
                 .GetOrElse(
-                    () => GetAmqpTransportSettings(TransportType.Amqp_Tcp_Only, connectionPoolSize, proxy, useServerHeartbeat, deviceCapabilityModelid));
+                    () => GetAmqpTransportSettings(TransportType.Amqp_Tcp_Only, connectionPoolSize, proxy, useServerHeartbeat));
         }
 
         static class Events
@@ -264,6 +256,11 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
                 CreatingCloudConnectionUsingClientCredentials,
                 CreatingCloudConnectionOnBehalfOf,
                 ServiceIdentityNotFound
+            }
+
+            public static void PrintMe(string printMe)
+            {
+                Log.LogDebug("DRB - " + printMe);
             }
 
             public static void SuccessCreatingCloudConnection(IIdentity identity)
@@ -281,8 +278,9 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
                 Log.LogDebug((int)EventIds.CreatingCloudConnectionUsingClientCredentials, $"Creating cloud connection for client {clientCredentials.Identity.Id} using client credentials");
             }
 
-            public static void CreatingCloudConnectionOnBehalfOf(IIdentity identity)
+            public static void CreatingCloudConnectionOnBehalfOf(IIdentity identity, Option<string> deviceCapabilityModelId)
             {
+                deviceCapabilityModelId.ForEach(dcmid => Log.LogDebug($"DRB - DeviceCapabilityModelId: {dcmid}"), () => Log.LogDebug("DRB - No DCMID found"));
                 Log.LogDebug((int)EventIds.CreatingCloudConnectionOnBehalfOf, $"Creating cloud connection for client {identity.Id} using EdgeHub credentials");
             }
 

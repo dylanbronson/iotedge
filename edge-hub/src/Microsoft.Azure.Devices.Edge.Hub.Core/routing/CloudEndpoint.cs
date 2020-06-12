@@ -87,10 +87,12 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Routing
                 Option<string> deviceCapabilityModelId; 
                 if (routingMessage.SystemProperties.TryGetValue(SystemProperties.DeviceCapabilityModelId, out string dcmId))
                 {
+                    Events.PrintMe($"Found DCMID on message: {dcmId}");
                     deviceCapabilityModelId = Option.Some(dcmId);
                 }
                 else
                 {
+                    Events.PrintMe($"No DCMID on message");
                     deviceCapabilityModelId = Option.None<string>();
                 }
                 ISinkResult result = await this.ProcessClientMessagesBatch(id, deviceCapabilityModelId, new List<IRoutingMessage> { routingMessage }, token);
@@ -98,10 +100,10 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Routing
                 return result;
             }
 
-            public Task<ISinkResult> ProcessAsync(ICollection<IRoutingMessage> routingMessages, CancellationToken token)
+            public async Task<ISinkResult> ProcessAsync(ICollection<IRoutingMessage> routingMessages, CancellationToken token)
             {
                 Events.ProcessingMessages(Preconditions.CheckNotNull(routingMessages, nameof(routingMessages)));
-                Task<ISinkResult> syncResult = this.ProcessByClients(routingMessages, token);
+                ISinkResult syncResult = await this.ProcessByClients(routingMessages, token);
                 Events.DoneProcessing(token);
                 return syncResult;
             }
@@ -173,6 +175,18 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Routing
             // Process all messages for a particular client
             async Task<ISinkResult<IRoutingMessage>> ProcessClientMessages(string id, List<IRoutingMessage> routingMessages, CancellationToken token)
             {
+                Events.PrintMe($"ProcessClientMessages for id: {id}");
+                foreach (IRoutingMessage msg in routingMessages)
+                {
+                    if (msg.SystemProperties.TryGetValue(SystemProperties.DeviceCapabilityModelId, out string modelId))
+                    {
+                        Events.PrintMe($"DCMID on msg: {modelId}");
+                    }
+                    else
+                    {
+                        Events.PrintMe("No DCMID on msg");
+                    }
+                }
                 var result = new MergingSinkResult<IRoutingMessage>();
 
                 // Does this preserve order?
@@ -190,10 +204,13 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Routing
                         }
                     });
 
+                Events.PrintMe($"Split up client messages into {routingMessagesByModelId.Count()} groups");
                 // Add log statement here for how many deviceCapabilityModelIds we've split up into
 
-                foreach(var messages in routingMessagesByModelId)
+                foreach (var messages in routingMessagesByModelId)
                 {
+                    Events.PrintMe($"Group with key: {messages.Key}");
+
                     // Find the maximum message size, and divide messages into largest batches
                     // not exceeding max allowed IoTHub message size.
                     long maxMessageSize = messages.Select(r => r.Size()).Max();
@@ -230,7 +247,10 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Routing
                 }
 
                 // Add DMCID to the GetterFunction and pass it along to connectionManager
+                Events.PrintMe("Getting cloudProxy");
                 Util.Option<ICloudProxy> cloudProxy = await this.cloudEndpoint.cloudProxyGetterFunc(id, dcmid);
+                cloudProxy.ForEach(c => Events.PrintMe("got CP"), () => Events.PrintMe("Did not get CP"));
+
                 ISinkResult result = await cloudProxy.Match(
                     async cp =>
                     {
@@ -312,6 +332,11 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Routing
                 CancelledProcessing,
                 Created,
                 DoneProcessing
+            }
+
+            public static void PrintMe(string printMe)
+            {
+                Log.LogDebug("DRB - " + printMe);
             }
 
             public static void DeviceIdNotFound(IRoutingMessage routingMessage)

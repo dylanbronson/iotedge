@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Mqtt
     {
         const string ApiVersionKey = "api-version";
         const string DeviceClientTypeKey = "DeviceClientType";
-        const string DeviceCapabilityModelIdKey = "digital-twins-model-id";
+        const string DeviceCapabilityModelIdKey = "digital-twin-model-id";
         readonly IAuthenticator authenticator;
         readonly IClientCredentialsFactory clientCredentialsFactory;
         readonly bool clientCertAuthAllowed;
@@ -48,6 +48,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Mqtt
                 Preconditions.CheckNonWhiteSpace(clientId, nameof(clientId));
 
                 (string deviceId, string moduleId, string deviceClientType, Option<string> deviceCapabilityModelId) = ParseUserName(username);
+                deviceCapabilityModelId.ForEach(dcmid => Events.PrintMe($"found DCMID on username: {dcmid}"), () => Events.PrintMe("No dcmid found on Username"));
                 IClientCredentials deviceCredentials = null;
 
                 if (!string.IsNullOrEmpty(password))
@@ -214,6 +215,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Mqtt
 
         static IDictionary<string, string> ParseDeviceClientType(string queryParameterString)
         {
+            Events.PrintMe($"Query Parameter String: {queryParameterString}");
             // example input: "api-version=version&DeviceClientType=url-escaped-string&other-prop=value&some-other-prop"
             var kvsep = new[] { '=' };
 
@@ -225,6 +227,10 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Mqtt
                 .ToDictionary(
                     s => s[0],
                     s => Uri.UnescapeDataString(s.ElementAtOrEmpty(1))); // convert to Dictionary<string, string>
+            foreach (string key in queryParameters.Keys)
+            {
+                Events.PrintMe($"key {key}. Val: {queryParameters.Get(key)}");
+            }
             return queryParameters;
         }
 
@@ -240,6 +246,11 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Mqtt
                 CertAuthNotEnabled,
                 AuthNotFound,
                 ErrorCreatingIdentity
+            }
+
+            public static void PrintMe(string printMe)
+            {
+                Log.LogDebug("DRB - " + printMe);
             }
 
             public static void Success(string clientId, string username)

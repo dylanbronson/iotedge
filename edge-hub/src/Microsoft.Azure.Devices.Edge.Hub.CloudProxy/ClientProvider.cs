@@ -7,6 +7,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
     using Microsoft.Azure.Devices.Edge.Hub.Core.Device;
     using Microsoft.Azure.Devices.Edge.Hub.Core.Identity;
     using Microsoft.Azure.Devices.Edge.Util;
+    using Microsoft.Extensions.Logging;
 
     public class ClientProvider : IClientProvider
     {
@@ -81,6 +82,30 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
                 default:
                     throw new InvalidOperationException($"Invalid client identity type {identity.GetType()}");
             }
+        }
+
+        public IClient Create(IIdentity identity, ITokenProvider tokenProvider, ITransportSettings[] transportSettings, string deviceCapabilityModelID)
+        {
+            Preconditions.CheckNotNull(identity, nameof(identity));
+            Preconditions.CheckNotNull(transportSettings, nameof(transportSettings));
+            Preconditions.CheckNotNull(tokenProvider, nameof(tokenProvider));
+            ILogger Log = Logger.Factory.CreateLogger<ClientProvider>();
+            Log.LogDebug($"DRB - creating deviceClient with DCMID {deviceCapabilityModelID}");
+
+            switch (identity)
+            {
+                case IDeviceIdentity deviceIdentity:
+                    var options = new ClientOptions
+                    {
+                        ModelId = deviceCapabilityModelID,
+                    };
+                    DeviceClient deviceClient = DeviceClient.Create(identity.IotHubHostName, new DeviceAuthentication(tokenProvider, deviceIdentity.DeviceId), transportSettings, options);
+                    Log.LogDebug("DRB - Successfully created new device client with dcmid added");
+                    return new DeviceClientWrapper(deviceClient);
+                default:
+                    throw new InvalidOperationException($"Invalid client identity type {identity.GetType()}. Create with deviceCapabilityModelId supports only DeviceIdentity");
+            }
+
         }
     }
 }
