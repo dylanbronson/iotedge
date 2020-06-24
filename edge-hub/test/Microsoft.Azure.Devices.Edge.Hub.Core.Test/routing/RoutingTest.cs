@@ -428,7 +428,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Test.Routing
             var cloudConnection = Mock.Of<ICloudConnection>(c => c.IsActive && c.CloudProxy == Option.Some(cloudProxy.Object));
 
             var cloudConnectionProvider = new Mock<ICloudConnectionProvider>();
-            cloudConnectionProvider.Setup(c => c.Connect(It.IsAny<IClientCredentials>(), It.IsAny<Action<string, CloudConnectionStatus>>())).ReturnsAsync(Try.Success(cloudConnection));
+            cloudConnectionProvider.Setup(c => c.Connect(It.IsAny<IClientCredentials>(), It.IsAny<Option<string>>(), It.IsAny<Action<string, CloudConnectionStatus>>())).ReturnsAsync(Try.Success(cloudConnection));
 
             var deviceConnectivityManager = Mock.Of<IDeviceConnectivityManager>();
             IConnectionManager connectionManager = new ConnectionManager(cloudConnectionProvider.Object, Mock.Of<ICredentialsCache>(), new IdentityProvider(iotHubName), deviceConnectivityManager);

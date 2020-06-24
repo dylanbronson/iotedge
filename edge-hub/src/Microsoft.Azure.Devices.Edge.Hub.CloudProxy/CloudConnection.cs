@@ -24,12 +24,14 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
         readonly bool closeOnIdleTimeout;
         readonly TimeSpan operationTimeout;
         readonly string productInfo;
+        protected readonly Option<string> modelId;
         Option<ICloudProxy> cloudProxy;
 
         protected CloudConnection(
             IIdentity identity,
             Action<string, CloudConnectionStatus> connectionStatusChangedHandler,
             ITransportSettings[] transportSettings,
+            Option<string> modelId,
             IMessageConverterProvider messageConverterProvider,
             IClientProvider clientProvider,
             ICloudListener cloudListener,
@@ -41,6 +43,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
             this.Identity = Preconditions.CheckNotNull(identity, nameof(identity));
             this.ConnectionStatusChangedHandler = connectionStatusChangedHandler;
             this.transportSettingsList = Preconditions.CheckNotNull(transportSettings, nameof(transportSettings));
+            this.modelId = modelId;
             this.messageConverterProvider = Preconditions.CheckNotNull(messageConverterProvider, nameof(messageConverterProvider));
             this.clientProvider = Preconditions.CheckNotNull(clientProvider, nameof(clientProvider));
             this.cloudListener = Preconditions.CheckNotNull(cloudListener, nameof(cloudListener));
@@ -67,6 +70,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
             IIdentity identity,
             Action<string, CloudConnectionStatus> connectionStatusChangedHandler,
             ITransportSettings[] transportSettings,
+            Option<string> modelId,
             IMessageConverterProvider messageConverterProvider,
             IClientProvider clientProvider,
             ICloudListener cloudListener,
@@ -81,6 +85,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
                 identity,
                 connectionStatusChangedHandler,
                 transportSettings,
+                modelId,
                 messageConverterProvider,
                 clientProvider,
                 cloudListener,
@@ -114,7 +119,10 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
         async Task<IClient> ConnectToIoTHub(ITokenProvider newTokenProvider)
         {
             Events.AttemptingConnectionWithTransport(this.transportSettingsList, this.Identity);
-            IClient client = this.clientProvider.Create(this.Identity, newTokenProvider, this.transportSettingsList);
+
+            IClient client = this.modelId.Match(
+                            modelId => this.clientProvider.Create(this.Identity, newTokenProvider, this.transportSettingsList, modelId),
+                            () => this.clientProvider.Create(this.Identity, newTokenProvider, this.transportSettingsList));
 
             client.SetOperationTimeoutInMilliseconds((uint)this.operationTimeout.TotalMilliseconds);
             client.SetConnectionStatusChangedHandler(this.InternalConnectionStatusChangesHandler);

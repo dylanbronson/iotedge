@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
             this.edgeHub = Option.Some(Preconditions.CheckNotNull(edgeHubInstance, nameof(edgeHubInstance)));
         }
 
-        public async Task<Try<ICloudConnection>> Connect(IClientCredentials clientCredentials, Action<string, CloudConnectionStatus> connectionStatusChangedHandler)
+        public async Task<Try<ICloudConnection>> Connect(IClientCredentials clientCredentials, Option<string> modelId, Action<string, CloudConnectionStatus> connectionStatusChangedHandler)
         {
             Preconditions.CheckNotNull(clientCredentials, nameof(clientCredentials));
 
@@ -84,6 +84,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
                         clientCredentials.Identity,
                         connectionStatusChangedHandler,
                         this.transportSettings,
+                        modelId,
                         this.messageConverterProvider,
                         this.clientProvider,
                         cloudListener,
@@ -101,6 +102,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
                         clientTokenCredentails,
                         connectionStatusChangedHandler,
                         this.transportSettings,
+                        modelId,
                         this.messageConverterProvider,
                         this.clientProvider,
                         cloudListener,
@@ -123,7 +125,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
             }
         }
 
-        public async Task<Try<ICloudConnection>> Connect(IIdentity identity, Action<string, CloudConnectionStatus> connectionStatusChangedHandler)
+        public async Task<Try<ICloudConnection>> Connect(IIdentity identity, Option<string> modelId, Action<string, CloudConnectionStatus> connectionStatusChangedHandler)
         {
             Preconditions.CheckNotNull(identity, nameof(identity));
 
@@ -142,6 +144,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
                                 identity,
                                 connectionStatusChangedHandler,
                                 this.transportSettings,
+                                modelId,
                                 this.messageConverterProvider,
                                 this.clientProvider,
                                 cloudListener,
@@ -159,7 +162,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
                             Events.ServiceIdentityNotFound(identity);
                             Option<IClientCredentials> clientCredentials = await this.credentialsCache.Get(identity);
                             return await clientCredentials
-                                .Map(cc => this.Connect(cc, connectionStatusChangedHandler))
+                                .Map(cc => this.Connect(cc, modelId, connectionStatusChangedHandler))
                                 .GetOrElse(() => throw new InvalidOperationException($"Unable to find identity {identity.Id} in device scopes cache or credentials cache"));
                         });
             }

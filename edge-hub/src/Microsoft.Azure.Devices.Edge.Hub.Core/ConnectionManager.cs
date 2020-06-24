@@ -29,6 +29,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
         readonly ICredentialsCache credentialsCache;
         readonly IIdentityProvider identityProvider;
         readonly IDeviceConnectivityManager connectivityManager;
+        ConcurrentDictionary<string, string> deviceIdentityToCurrentModelId = new ConcurrentDictionary<string, string>();
 
         public ConnectionManager(
             ICloudConnectionProvider cloudConnectionProvider,
@@ -88,19 +89,52 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
 
         public async Task<Option<ICloudProxy>> GetCloudConnection(string id)
         {
-            Try<ICloudProxy> cloudProxyTry = await this.TryGetCloudConnection(id);
+            Option<string> modelId = this.deviceIdentityToCurrentModelId.Get(id);
+            Try<ICloudProxy> cloudProxyTry = await this.TryGetCloudConnection(id, modelId);
             return cloudProxyTry
                 .Ok()
-                .Map(c => (ICloudProxy)new RetryingCloudProxy(id, () => this.TryGetCloudConnection(id), c));
+                .Map(c => (ICloudProxy)new RetryingCloudProxy(id, () => this.TryGetCloudConnection(id, modelId), c));
         }
 
-        async Task<Try<ICloudProxy>> TryGetCloudConnection(string id)
+        public async Task<Option<ICloudProxy>> GetCloudConnection(string id, Option<string> modelId)
         {
+            Try<ICloudProxy> cloudProxyTry = await this.TryGetCloudConnection(id, modelId);
+            return cloudProxyTry
+                .Ok()
+                .Map(c => (ICloudProxy)new RetryingCloudProxy(id, () => this.TryGetCloudConnection(id, modelId), c));
+        }
+
+        async Task<Try<ICloudProxy>> TryGetCloudConnection(string id, Option<string> modelId)
+        {
+            bool forceNewCloudConnection = true;
             IIdentity identity = this.identityProvider.Create(Preconditions.CheckNonWhiteSpace(id, nameof(id)));
             ConnectedDevice device = this.GetOrCreateConnectedDevice(identity);
+            Option<string> currentModelId = this.deviceIdentityToCurrentModelId.Get(id);
+
+            modelId.ForEach(
+                m =>
+                {
+                    currentModelId.ForEach(
+                        c =>
+                        {
+                            if (c.Equals(m))
+                            {
+                                forceNewCloudConnection = false;
+                            }
+                        },
+                        () => this.deviceIdentityToCurrentModelId.TryAdd(id, m));
+                },
+                () => forceNewCloudConnection = false);
+
+            if (forceNewCloudConnection)
+            {
+                await device.CloudConnection.ForEachAsync(async c => await c.CloseAsync());
+                Try<ICloudConnection> ccTry = await device.CreateOrUpdateCloudConnection(c => this.ConnectToCloud(c.Identity, modelId, this.CloudConnectionStatusChangedHandler));
+                return GetCloudProxyFromCloudConnection(ccTry, device.Identity);
+            }
 
             Try<ICloudConnection> cloudConnectionTry = await device.GetOrCreateCloudConnection(
-                c => this.ConnectToCloud(c.Identity, this.CloudConnectionStatusChangedHandler));
+                c => this.ConnectToCloud(c.Identity, modelId, this.CloudConnectionStatusChangedHandler));
 
             Events.GetCloudConnection(device.Identity, cloudConnectionTry);
             Try<ICloudProxy> cloudProxyTry = GetCloudProxyFromCloudConnection(cloudConnectionTry, device.Identity);
@@ -145,11 +179,12 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
             Preconditions.CheckNotNull(credentials, nameof(credentials));
 
             ConnectedDevice device = this.CreateOrUpdateConnectedDevice(credentials.Identity);
-            Try<ICloudConnection> newCloudConnection = await device.CreateOrUpdateCloudConnection(c => this.CreateOrUpdateCloudConnection(c, credentials));
+            Option<string> modelId = this.deviceIdentityToCurrentModelId.Get(credentials.Identity.Id);
+            Try<ICloudConnection> newCloudConnection = await device.CreateOrUpdateCloudConnection(c => this.CreateOrUpdateCloudConnection(c, modelId, credentials));
             Events.NewCloudConnection(credentials.Identity, newCloudConnection);
             Try<ICloudProxy> cloudProxyTry = GetCloudProxyFromCloudConnection(newCloudConnection, credentials.Identity);
             return cloudProxyTry.Success
-                ? Try.Success((ICloudProxy)new RetryingCloudProxy(credentials.Identity.Id, () => this.TryGetCloudConnection(credentials.Identity.Id), cloudProxyTry.Value))
+                ? Try.Success((ICloudProxy)new RetryingCloudProxy(credentials.Identity.Id, () => this.TryGetCloudConnection(credentials.Identity.Id, modelId), cloudProxyTry.Value))
                 : cloudProxyTry;
         }
 
@@ -162,12 +197,13 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
             // Get an existing ConnectedDevice from this.devices or add a new non-connected
             // instance to this.devices and return that.
             ConnectedDevice device = this.GetOrCreateConnectedDevice(credentials.Identity);
+            Option<string> modelId = this.deviceIdentityToCurrentModelId.Get(credentials.Identity.Id);
 
-            Try<ICloudConnection> cloudConnectionTry = await device.GetOrCreateCloudConnection((c) => this.CreateOrUpdateCloudConnection(c, credentials));
+            Try<ICloudConnection> cloudConnectionTry = await device.GetOrCreateCloudConnection((c) => this.CreateOrUpdateCloudConnection(c, modelId, credentials));
             Events.GetCloudConnection(credentials.Identity, cloudConnectionTry);
             Try<ICloudProxy> cloudProxyTry = GetCloudProxyFromCloudConnection(cloudConnectionTry, credentials.Identity);
             return cloudProxyTry.Success
-                ? Try.Success((ICloudProxy)new RetryingCloudProxy(credentials.Identity.Id, () => this.TryGetCloudConnection(credentials.Identity.Id), cloudProxyTry.Value))
+                ? Try.Success((ICloudProxy)new RetryingCloudProxy(credentials.Identity.Id, () => this.TryGetCloudConnection(credentials.Identity.Id, modelId), cloudProxyTry.Value))
                 : cloudProxyTry;
         }
 
@@ -191,7 +227,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
             this.DeviceDisconnected?.Invoke(this, device.Identity);
         }
 
-        Task<Try<ICloudConnection>> CreateOrUpdateCloudConnection(ConnectedDevice device, IClientCredentials credentials) =>
+        Task<Try<ICloudConnection>> CreateOrUpdateCloudConnection(ConnectedDevice device, Option<string> modelId, IClientCredentials credentials) =>
             device.CloudConnection.Map(
                     async c =>
                     {
@@ -216,7 +252,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
                             return Try<ICloudConnection>.Failure(new EdgeHubConnectionException($"Error updating identity for device {device.Identity.Id}", ex));
                         }
                     })
-                .GetOrElse(() => this.ConnectToCloud(credentials, this.CloudConnectionStatusChangedHandler));
+                .GetOrElse(() => this.ConnectToCloud(credentials, modelId, this.CloudConnectionStatusChangedHandler));
 
         async void CloudConnectionStatusChangedHandler(
             string deviceId,
@@ -241,7 +277,8 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
                             {
                                 if (cc is ITokenCredentials tokenCredentials && tokenCredentials.IsUpdatable)
                                 {
-                                    Try<ICloudConnection> cloudConnectionTry = await device.CreateOrUpdateCloudConnection(c => this.CreateOrUpdateCloudConnection(c, tokenCredentials));
+                                    Option<string> modelId = this.deviceIdentityToCurrentModelId.Get(tokenCredentials.Identity.Id);
+                                    Try<ICloudConnection> cloudConnectionTry = await device.CreateOrUpdateCloudConnection(c => this.CreateOrUpdateCloudConnection(c, modelId, tokenCredentials));
                                     if (!cloudConnectionTry.Success)
                                     {
                                         await this.RemoveDeviceConnection(device, true);
@@ -329,19 +366,19 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
             }
         }
 
-        async Task<Try<ICloudConnection>> ConnectToCloud(IIdentity identity, Action<string, CloudConnectionStatus> connectionStatusChangedHandler)
+        async Task<Try<ICloudConnection>> ConnectToCloud(IIdentity identity, Option<string> modelId, Action<string, CloudConnectionStatus> connectionStatusChangedHandler)
         {
             using (await this.connectToCloudLock.ReaderLockAsync())
             {
-                return await this.cloudConnectionProvider.Connect(identity, connectionStatusChangedHandler);
+                return await this.cloudConnectionProvider.Connect(identity, modelId, connectionStatusChangedHandler);
             }
         }
 
-        async Task<Try<ICloudConnection>> ConnectToCloud(IClientCredentials credentials, Action<string, CloudConnectionStatus> connectionStatusChangedHandler)
+        async Task<Try<ICloudConnection>> ConnectToCloud(IClientCredentials credentials, Option<string> modelId, Action<string, CloudConnectionStatus> connectionStatusChangedHandler)
         {
             using (await this.connectToCloudLock.ReaderLockAsync())
             {
-                return await this.cloudConnectionProvider.Connect(credentials, connectionStatusChangedHandler);
+                return await this.cloudConnectionProvider.Connect(credentials, modelId, connectionStatusChangedHandler);
             }
         }
 

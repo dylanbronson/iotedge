@@ -336,7 +336,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy.Test
             var deviceIdentity = new DeviceIdentity(iotHubHostName, deviceId);
             var clientCredentials = new TokenCredentials(deviceIdentity, token, string.Empty, false);
 
-            Try<ICloudConnection> cloudConnection = await cloudConnectionProvider.Connect(clientCredentials, (_, __) => { });
+            Try<ICloudConnection> cloudConnection = await cloudConnectionProvider.Connect(clientCredentials, Option.None<string>(), (_, __) => { });
             Assert.True(cloudConnection.Success);
             Assert.True(cloudConnection.Value.IsActive);
             Assert.True(cloudConnection.Value.CloudProxy.HasValue);
