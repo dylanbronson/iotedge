@@ -7,6 +7,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
     using Microsoft.Azure.Devices.Edge.Hub.Core.Device;
     using Microsoft.Azure.Devices.Edge.Hub.Core.Identity;
     using Microsoft.Azure.Devices.Edge.Util;
+    using Microsoft.Extensions.Logging;
 
     public class ClientProvider : IClientProvider
     {
@@ -83,18 +84,19 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
             }
         }
 
-        public IClient Create(IIdentity identity, ITokenProvider tokenProvider, ITransportSettings[] transportSettings, string deviceCapabilityModelID)
+        public IClient Create(IIdentity identity, ITokenProvider tokenProvider, ITransportSettings[] transportSettings, string modelId)
         {
             Preconditions.CheckNotNull(identity, nameof(identity));
             Preconditions.CheckNotNull(transportSettings, nameof(transportSettings));
             Preconditions.CheckNotNull(tokenProvider, nameof(tokenProvider));
-
+            ILogger Log = Logger.Factory.CreateLogger<ClientProvider>();
+            Log.LogInformation($"DRB - creating device client with modelId {modelId}");
             switch (identity)
             {
                 case IDeviceIdentity deviceIdentity:
                     var options = new ClientOptions
                     {
-                        ModelId = deviceCapabilityModelID,
+                        ModelId = modelId,
                     };
                     DeviceClient deviceClient = DeviceClient.Create(identity.IotHubHostName, new DeviceAuthentication(tokenProvider, deviceIdentity.DeviceId), transportSettings, options);
                     return new DeviceClientWrapper(deviceClient);

@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Test.Routing
             var cloudProxyMock = new Mock<ICloudProxy>();
             string cloudEndpointId = Guid.NewGuid().ToString();
 
-            Task<Option<ICloudProxy>> GetCloudProxy(string id) => Task.FromResult(Option.Some(cloudProxyMock.Object));
+            Task<Option<ICloudProxy>> GetCloudProxy(string id, Option<string> modelId) => Task.FromResult(Option.Some(cloudProxyMock.Object));
 
             var cloudEndpoint = new CloudEndpoint(cloudEndpointId, GetCloudProxy, routingMessageConverter);
             IProcessor cloudMessageProcessor = cloudEndpoint.CreateProcessor();
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Test.Routing
             var message2 = new RoutingMessage(TelemetryMessageSource.Instance, messageBody, properties, device2SystemProperties);
             var message3 = new RoutingMessage(TelemetryMessageSource.Instance, messageBody, cancelProperties, device1SystemProperties);
 
-            Task<Option<ICloudProxy>> GetCloudProxy(string id)
+            Task<Option<ICloudProxy>> GetCloudProxy(string id, Option<string> modelId)
             {
                 return Task.FromResult(
                     id.Equals(device1Id)
@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Test.Routing
             var message1 = new RoutingMessage(TelemetryMessageSource.Instance, messageBody, properties, device1SystemProperties);
             var message2 = new RoutingMessage(TelemetryMessageSource.Instance, messageBody, properties, device2SystemProperties);
 
-            Task<Option<ICloudProxy>> GetCloudProxy(string id)
+            Task<Option<ICloudProxy>> GetCloudProxy(string id, Option<string> modelId)
             {
                 return Task.FromResult(Option.Some(cloudProxyMock.Object));
             }
@@ -235,7 +235,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Test.Routing
             var device3CloudReceivedMessagesCountList = new List<int>();
             Mock<ICloudProxy> device3CloudProxy = InitCloudProxy(device3CloudReceivedMessagesCountList);
 
-            Task<Option<ICloudProxy>> GetCloudProxy(string id)
+            Task<Option<ICloudProxy>> GetCloudProxy(string id, Option<string> modelId)
             {
                 ICloudProxy cp = null;
                 if (id == device1)
@@ -306,7 +306,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Test.Routing
             var device3CloudReceivedMessagesCountList = new List<int>();
             Mock<ICloudProxy> device3CloudProxy = InitCloudProxy(device3CloudReceivedMessagesCountList);
 
-            Task<Option<ICloudProxy>> GetCloudProxy(string id)
+            Task<Option<ICloudProxy>> GetCloudProxy(string id, Option<string> modelId)
             {
                 ICloudProxy cp = null;
                 if (id == device1)
@@ -354,7 +354,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Test.Routing
                                 .WithReportSuccessfulBatch(3)
                                 .Build();
 
-            Task<Option<ICloudProxy>> GetCloudProxy(string id) => Task.FromResult(Option.Some(cloudProxy));
+            Task<Option<ICloudProxy>> GetCloudProxy(string id, Option<string> modelId) => Task.FromResult(Option.Some(cloudProxy));
 
             var cloudEndpoint = new CloudEndpoint(cloudEndpointId, GetCloudProxy, routingMessageConverter, batchSize);
             IProcessor cloudMessageProcessor = cloudEndpoint.CreateProcessor();
@@ -383,7 +383,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Test.Routing
                                 .WithReportSuccessfulBatch(2)
                                 .Build();
 
-            Task<Option<ICloudProxy>> GetCloudProxy(string id) => Task.FromResult(Option.Some(cloudProxy));
+            Task<Option<ICloudProxy>> GetCloudProxy(string id, Option<string> modelId) => Task.FromResult(Option.Some(cloudProxy));
 
             var cloudEndpoint = new CloudEndpoint(cloudEndpointId, GetCloudProxy, routingMessageConverter);
             IProcessor cloudMessageProcessor = cloudEndpoint.CreateProcessor();
@@ -414,7 +414,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Test.Routing
                                 .WithReportSuccessfulBatch(2)
                                 .Build();
 
-            Task<Option<ICloudProxy>> GetCloudProxy(string id) => Task.FromResult(Option.Some(cloudProxy));
+            Task<Option<ICloudProxy>> GetCloudProxy(string id, Option<string> modelId) => Task.FromResult(Option.Some(cloudProxy));
 
             var cloudEndpoint = new CloudEndpoint(cloudEndpointId, GetCloudProxy, routingMessageConverter);
             IProcessor cloudMessageProcessor = cloudEndpoint.CreateProcessor();
@@ -445,7 +445,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Test.Routing
                                 .WithReportSuccessfulBatch()
                                 .Build();
 
-            Task<Option<ICloudProxy>> GetCloudProxy(string id) => Task.FromResult(Option.Some(cloudProxy));
+            Task<Option<ICloudProxy>> GetCloudProxy(string id, Option<string> modelId) => Task.FromResult(Option.Some(cloudProxy));
 
             var cloudEndpoint = new CloudEndpoint(cloudEndpointId, GetCloudProxy, routingMessageConverter);
             IProcessor cloudMessageProcessor = cloudEndpoint.CreateProcessor();
@@ -486,7 +486,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Test.Routing
 
             var proxyMap = new Dictionary<string, ICloudProxy> { ["device1"] = cloudProxy1, ["device2"] = cloudProxy2 };
 
-            Task<Option<ICloudProxy>> GetCloudProxy(string id) => Task.FromResult(Option.Some(proxyMap[id]));
+            Task<Option<ICloudProxy>> GetCloudProxy(string id, Option<string> modelId) => Task.FromResult(Option.Some(proxyMap[id]));
 
             var cloudEndpoint = new CloudEndpoint(cloudEndpointId, GetCloudProxy, routingMessageConverter);
             var cloudMessageProcessor = cloudEndpoint.CreateProcessor();

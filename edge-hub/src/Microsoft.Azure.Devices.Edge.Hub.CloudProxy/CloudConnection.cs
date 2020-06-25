@@ -121,8 +121,8 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
             Events.AttemptingConnectionWithTransport(this.transportSettingsList, this.Identity);
 
             IClient client = this.modelId.Match(
-                            modelId => this.clientProvider.Create(this.Identity, newTokenProvider, this.transportSettingsList, modelId),
-                            () => this.clientProvider.Create(this.Identity, newTokenProvider, this.transportSettingsList));
+                modelId => this.clientProvider.Create(this.Identity, newTokenProvider, this.transportSettingsList, modelId),
+                () => this.clientProvider.Create(this.Identity, newTokenProvider, this.transportSettingsList));
 
             client.SetOperationTimeoutInMilliseconds((uint)this.operationTimeout.TotalMilliseconds);
             client.SetConnectionStatusChangedHandler(this.InternalConnectionStatusChangesHandler);

@@ -27,13 +27,13 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Routing
 
     public class CloudEndpoint : Endpoint
     {
-        readonly Func<string, Task<Util.Option<ICloudProxy>>> cloudProxyGetterFunc;
+        readonly Func<string, Option<string>, Task<Util.Option<ICloudProxy>>> cloudProxyGetterFunc;
         readonly Core.IMessageConverter<IRoutingMessage> messageConverter;
         readonly int maxBatchSize;
 
         public CloudEndpoint(
             string id,
-            Func<string, Task<Util.Option<ICloudProxy>>> cloudProxyGetterFunc,
+            Func<string, Option<string>, Task<Util.Option<ICloudProxy>>> cloudProxyGetterFunc,
             Core.IMessageConverter<IRoutingMessage> messageConverter,
             int maxBatchSize = 10,
             int fanoutFactor = 10)
@@ -84,7 +84,17 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Routing
                 Preconditions.CheckNotNull(routingMessage, nameof(routingMessage));
 
                 string id = this.GetIdentity(routingMessage);
-                ISinkResult result = await this.ProcessClientMessagesBatch(id, new List<IRoutingMessage> { routingMessage }, token);
+                Option<string> modelId;
+                if (routingMessage.SystemProperties.TryGetValue(SystemProperties.ModelId, out string m))
+                {
+                    modelId = Option.Some(m);
+                }
+                else
+                {
+                    modelId = Option.None<string>();
+                }
+
+                ISinkResult result = await this.ProcessClientMessagesBatch(id, modelId, new List<IRoutingMessage> { routingMessage }, token);
                 Events.DoneProcessing(token);
                 return result;
             }
@@ -166,29 +176,45 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Routing
             {
                 var result = new MergingSinkResult<IRoutingMessage>();
 
-                // Find the maximum message size, and divide messages into largest batches
-                // not exceeding max allowed IoTHub message size.
-                long maxMessageSize = routingMessages.Select(r => r.Size()).Max();
-                int batchSize = GetBatchSize(Math.Min(this.cloudEndpoint.maxBatchSize, routingMessages.Count), maxMessageSize);
+                var routingMessagesByModelId = routingMessages.GroupBy(
+                    x =>
+                    {
+                        if (x.SystemProperties.TryGetValue(SystemProperties.ModelId, out string modelId))
+                        {
+                            return Option.Some(modelId);
+                        }
+                        else
+                        {
+                            return Option.None<string>();
+                        }
+                    });
 
-                var iterator = routingMessages.Batch(batchSize).GetEnumerator();
-                while (iterator.MoveNext())
+                foreach (var messages in routingMessagesByModelId)
                 {
-                    result.Merge(await this.ProcessClientMessagesBatch(id, iterator.Current.ToList(), token));
-                    if (!result.IsSuccessful)
-                        break;
-                }
+                    // Find the maximum message size, and divide messages into largest batches
+                    // not exceeding max allowed IoTHub message size.
+                    long maxMessageSize = messages.Select(r => r.Size()).Max();
+                    int batchSize = GetBatchSize(Math.Min(this.cloudEndpoint.maxBatchSize, messages.Count()), maxMessageSize);
 
-                // if failed earlier, fast-fail the rest
-                while (iterator.MoveNext())
-                {
-                    result.AddFailed(iterator.Current);
+                    var iterator = messages.Batch(batchSize).GetEnumerator();
+                    while (iterator.MoveNext())
+                    {
+                        result.Merge(await this.ProcessClientMessagesBatch(id, messages.Key, iterator.Current.ToList(), token));
+                        if (!result.IsSuccessful)
+                            break;
+                    }
+
+                    // if failed earlier, fast-fail the rest
+                    while (iterator.MoveNext())
+                    {
+                        result.AddFailed(iterator.Current);
+                    }
                 }
 
                 return result;
             }
 
-            async Task<ISinkResult<IRoutingMessage>> ProcessClientMessagesBatch(string id, List<IRoutingMessage> routingMessages, CancellationToken token)
+            async Task<ISinkResult<IRoutingMessage>> ProcessClientMessagesBatch(string id, Option<string> modelId, List<IRoutingMessage> routingMessages, CancellationToken token)
             {
                 if (string.IsNullOrEmpty(id))
                 {
@@ -200,7 +226,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core.Routing
                     return HandleCancelled(routingMessages);
                 }
 
-                Util.Option<ICloudProxy> cloudProxy = await this.cloudEndpoint.cloudProxyGetterFunc(id);
+                Util.Option<ICloudProxy> cloudProxy = await this.cloudEndpoint.cloudProxyGetterFunc(id, modelId);
                 ISinkResult result = await cloudProxy.Match(
                     async cp =>
                     {
