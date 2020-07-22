@@ -2,12 +2,15 @@
 namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
 {
     using System;
+    using System.Diagnostics.Tracing;
     using System.Globalization;
     using System.IO;
+    using System.Net.Security;
     using System.Security.Cryptography.X509Certificates;
     using System.Text;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
+    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
     class Program
     {
@@ -27,6 +30,7 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
         static readonly string MessageCountEnv = Environment.GetEnvironmentVariable("MESSAGE_COUNT");
 
         static int messageCount = 10;
+        private readonly ConsoleEventListener _listener;
 
         /// <summary>
         /// First install any CA certificate provided by the user to connect to the Edge device.
@@ -38,7 +42,7 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
         /// </summary>
         static void Main()
         {
-            InstallCACert();
+            ConsoleEventListener _listener = new ConsoleEventListener(new string[] { "Microsoft-Azure-Devices-Device-Client", "DotNetty-Default" });
 
             if (!string.IsNullOrWhiteSpace(MessageCountEnv))
             {
@@ -48,8 +52,14 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
                 }
             }
 
+            var options = new ClientOptions { ModelId = "dtmi:dybronso:CapabilityModel2;1" };
+
             Console.WriteLine("Creating device client from connection string\n");
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString);
+            var t = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
+            t.RemoteCertificateValidationCallback = (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) => true;
+
+            ITransportSettings[] transportSettings = new ITransportSettings[] { t };
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, transportSettings, options);
 
             if (deviceClient == null)
             {

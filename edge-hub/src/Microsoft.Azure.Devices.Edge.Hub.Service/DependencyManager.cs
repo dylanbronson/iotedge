@@ -301,7 +301,6 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Service
             {
                 Directory.CreateDirectory(directoryPath);
             }
-
             return directoryPath;
         }
 

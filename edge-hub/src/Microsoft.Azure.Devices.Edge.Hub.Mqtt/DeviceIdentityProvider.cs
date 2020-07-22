@@ -51,7 +51,9 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Mqtt
                 Preconditions.CheckNonWhiteSpace(clientId, nameof(clientId));
 
                 (string deviceId, string moduleId, string deviceClientType, Option<string> modelId) = ParseUserName(username);
+                Events.PrintMe("Setting modelId");
                 modelId.ForEach(async m => await this.modelIdStore.SetModelId(deviceId, m));
+                Events.PrintMe($"Setting modelId set for deviceId: {deviceId}");
                 IClientCredentials deviceCredentials = null;
 
                 if (!string.IsNullOrEmpty(password))
@@ -241,6 +243,11 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Mqtt
                 CertAuthNotEnabled,
                 AuthNotFound,
                 ErrorCreatingIdentity
+            }
+
+            public static void PrintMe(string printMe)
+            {
+                Log.LogDebug($"DRB - {printMe}");
             }
 
             public static void Success(string clientId, string username)

@@ -7,9 +7,12 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
     using Microsoft.Azure.Devices.Edge.Hub.Core.Device;
     using Microsoft.Azure.Devices.Edge.Hub.Core.Identity;
     using Microsoft.Azure.Devices.Edge.Util;
+    using Microsoft.Extensions.Logging;
 
     public class ClientProvider : IClientProvider
     {
+        static readonly ILogger Log = Logger.Factory.CreateLogger<ClientProvider>();
+
         public IClient Create(IIdentity identity, IAuthenticationMethod authenticationMethod, ITransportSettings[] transportSettings)
         {
             Preconditions.CheckNotNull(identity, nameof(identity));
@@ -32,6 +35,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
 
         public IClient Create(IIdentity identity, string connectionString, ITransportSettings[] transportSettings)
         {
+            Log.LogDebug("DRB - Creating with no modelId");
             Preconditions.CheckNotNull(identity, nameof(identity));
             Preconditions.CheckNotNull(transportSettings, nameof(transportSettings));
             Preconditions.CheckNonWhiteSpace(connectionString, nameof(connectionString));
@@ -52,6 +56,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
 
         public async Task<IClient> CreateAsync(IIdentity identity, ITransportSettings[] transportSettings)
         {
+            Log.LogDebug("DRB - Creating with no modelId");
             Preconditions.CheckNotNull(identity, nameof(identity));
             Preconditions.CheckNotNull(transportSettings, nameof(transportSettings));
 
@@ -89,6 +94,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
             Preconditions.CheckNotNull(transportSettings, nameof(transportSettings));
             Preconditions.CheckNotNull(tokenProvider, nameof(tokenProvider));
             Preconditions.CheckNonWhiteSpace(modelId, nameof(modelId));
+            Log.LogDebug($"DRB - Creating with modelId: {modelId}");
             var options = new ClientOptions
             {
                 ModelId = modelId,

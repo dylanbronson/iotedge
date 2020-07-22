@@ -34,6 +34,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.LinkHandlers
             this.connectionHandler = Preconditions.CheckNotNull(connectionHandler, nameof(connectionHandler));
             this.productInfoStore = Preconditions.CheckNotNull(productInfoStore, nameof(productInfoStore));
 
+            Events.PrintMe("Parsing Link...");
             string clientVersion = null;
             if (this.Link.Settings?.Properties?.TryGetValue(IotHubAmqpProperty.ClientVersion, out clientVersion) ?? false)
             {
@@ -128,6 +129,11 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Amqp.LinkHandlers
             {
                 Closing = IdStart,
                 Opened
+            }
+
+            public static void PrintMe(string printMe)
+            {
+                Log.LogDebug("DRB - " + printMe);
             }
 
             public static void Closed(LinkHandler handler)
