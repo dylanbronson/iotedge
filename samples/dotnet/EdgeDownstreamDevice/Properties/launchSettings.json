@@ -1,12 +1,12 @@
 {
-    "profiles": {
-        "EdgeDownstreamDevice": {
-            "commandName": "Project",
-            "environmentVariables": {
-                "DEVICE_CONNECTION_STRING": "<your connection string>",
-                "CA_CERTIFICATE_PATH": "",
-                "MESSAGE_COUNT": "10"
-            }
-        }
+  "profiles": {
+    "EdgeDownstreamDevice": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "MESSAGE_COUNT": "10",
+        "CA_CERTIFICATE_PATH": "",
+        "DEVICE_CONNECTION_STRING": "HostName=dybronso-pnp-hub.azure-devices.net;DeviceId=pnpDevice10;SharedAccessKey=skuBT1jlFvIwab6dgKsa4EhZyGUxD4sax0G7uEvkT4I=;GatewayHostName=dybronso"
+      }
     }
+  }
 }

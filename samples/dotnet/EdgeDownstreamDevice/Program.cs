@@ -2,12 +2,16 @@
 namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
 {
     using System;
+    using System.Diagnostics.Tracing;
     using System.Globalization;
     using System.IO;
+    using System.Net.Security;
     using System.Security.Cryptography.X509Certificates;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
+    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
     class Program
     {
@@ -23,7 +27,7 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
         //
         // Either set the DEVICE_CONNECTION_STRING environment variable with this connection string
         // or set it in the Properties/launchSettings.json.
-        static readonly string DeviceConnectionString = Environment.GetEnvironmentVariable("DEVICE_CONNECTION_STRING");
+        // static readonly string DeviceConnectionString = Environment.GetEnvironmentVariable("DEVICE_CONNECTION_STRING");
         static readonly string MessageCountEnv = Environment.GetEnvironmentVariable("MESSAGE_COUNT");
 
         static int messageCount = 10;
@@ -36,10 +40,9 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
         /// Note: Either set the MESSAGE_COUNT environment variable with the number of
         /// messages to be sent to the IoT Edge runtime or set it in the launchSettings.json.
         /// </summary>
-        static void Main()
+        static async Task Main()
         {
-            InstallCACert();
-
+            Thread.Sleep(10000);
             if (!string.IsNullOrWhiteSpace(MessageCountEnv))
             {
                 if (!int.TryParse(MessageCountEnv, out messageCount))
@@ -48,16 +51,23 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
                 }
             }
 
-            Console.WriteLine("Creating device client from connection string\n");
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString);
+            var options = new ClientOptions { ModelId = "dtmi:dybronso:CapabilityModel2;1" };
 
-            if (deviceClient == null)
+            Console.WriteLine("Creating device client from connection string\n");
+            var t = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+            t.RemoteCertificateValidationCallback = (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) => true;
+
+            ITransportSettings[] transportSettings = new ITransportSettings[] { t };
+            //DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, transportSettings, options);
+            ModuleClient moduleClient = await ModuleClient.CreateFromEnvironmentAsync(transportSettings, options);
+
+            if (moduleClient == null)
             {
                 Console.WriteLine("Failed to create DeviceClient!");
             }
             else
             {
-                SendEvents(deviceClient, messageCount).Wait();
+                SendEvents(moduleClient, messageCount).Wait();
             }
 
             Console.WriteLine("Exiting!\n");
@@ -104,7 +114,7 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
         /// to the IoT Edge runtime. The number of messages to be sent is determined
         /// by environment variable MESSAGE_COUNT.
         /// </summary>
-        static async Task SendEvents(DeviceClient deviceClient, int messageCount)
+        static async Task SendEvents(ModuleClient moduleClient, int messageCount)
         {
             Random rnd = new Random();
             Console.WriteLine("Edge downstream device attempting to send {0} messages to Edge Hub...\n", messageCount);
@@ -118,7 +128,7 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
                 eventMessage.Properties.Add("temperatureAlert", (temperature > TemperatureThreshold) ? "true" : "false");
                 Console.WriteLine("\t{0}> Sending message: {1}, Data: [{2}]", DateTime.Now.ToLocalTime(), count, dataBuffer);
 
-                await deviceClient.SendEventAsync(eventMessage).ConfigureAwait(false);
+                await moduleClient.SendEventAsync(eventMessage).ConfigureAwait(false);
             }
         }
     }
