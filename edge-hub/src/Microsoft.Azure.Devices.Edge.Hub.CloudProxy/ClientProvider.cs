@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
                     return new DeviceClientWrapper(deviceClient);
 
                 case IModuleIdentity moduleIdentity:
-                    ModuleClient moduleClient = ModuleClient.Create(identity.IotHubHostName, new ModuleAuthentication(tokenProvider, moduleIdentity.DeviceId, moduleIdentity.ModuleId), options);
+                    ModuleClient moduleClient = ModuleClient.Create(identity.IotHubHostName, new ModuleAuthentication(tokenProvider, moduleIdentity.DeviceId, moduleIdentity.ModuleId), transportSettings, options);
                     return new ModuleClientWrapper(moduleClient);
 
                 default:
