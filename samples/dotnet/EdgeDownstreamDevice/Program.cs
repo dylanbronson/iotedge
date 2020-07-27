@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
         //
         // Either set the DEVICE_CONNECTION_STRING environment variable with this connection string
         // or set it in the Properties/launchSettings.json.
-        // static readonly string DeviceConnectionString = Environment.GetEnvironmentVariable("DEVICE_CONNECTION_STRING");
+        static readonly string DeviceConnectionString = Environment.GetEnvironmentVariable("DEVICE_CONNECTION_STRING");
         static readonly string MessageCountEnv = Environment.GetEnvironmentVariable("MESSAGE_COUNT");
         static readonly string ModelId = Environment.GetEnvironmentVariable("ModelId");
 
@@ -59,16 +59,16 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
             t.RemoteCertificateValidationCallback = (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) => true;
 
             ITransportSettings[] transportSettings = new ITransportSettings[] { t };
-            //DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, transportSettings, options);
-            ModuleClient moduleClient = await ModuleClient.CreateFromEnvironmentAsync(transportSettings, options);
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, transportSettings, options);
+            //ModuleClient moduleClient = await ModuleClient.CreateFromEnvironmentAsync(transportSettings, options);
 
-            if (moduleClient == null)
+            if (deviceClient == null)
             {
                 Console.WriteLine("Failed to create DeviceClient!");
             }
             else
             {
-                SendEvents(moduleClient, messageCount).Wait();
+                SendEvents(deviceClient, messageCount).Wait();
             }
 
             Console.WriteLine("Exiting!\n");
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
         /// to the IoT Edge runtime. The number of messages to be sent is determined
         /// by environment variable MESSAGE_COUNT.
         /// </summary>
-        static async Task SendEvents(ModuleClient moduleClient, int messageCount)
+        static async Task SendEvents(DeviceClient deviceClient, int messageCount)
         {
             Random rnd = new Random();
             Console.WriteLine("Edge downstream device attempting to send {0} messages to Edge Hub...\n", messageCount);
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
                 eventMessage.Properties.Add("temperatureAlert", (temperature > TemperatureThreshold) ? "true" : "false");
                 Console.WriteLine("\t{0}> Sending message: {1}, Data: [{2}]", DateTime.Now.ToLocalTime(), count, dataBuffer);
 
-                await moduleClient.SendEventAsync(eventMessage).ConfigureAwait(false);
+                await deviceClient.SendEventAsync(eventMessage).ConfigureAwait(false);
             }
         }
     }

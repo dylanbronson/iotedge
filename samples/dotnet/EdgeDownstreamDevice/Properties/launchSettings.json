@@ -5,6 +5,7 @@
       "environmentVariables": {
         "MESSAGE_COUNT": "10",
         "CA_CERTIFICATE_PATH": "",
+        "ModelId": "dtmi:testModelId:foo:1",
         "DEVICE_CONNECTION_STRING": "HostName=dybronso-pnp-hub.azure-devices.net;DeviceId=pnpDevice10;SharedAccessKey=skuBT1jlFvIwab6dgKsa4EhZyGUxD4sax0G7uEvkT4I=;GatewayHostName=dybronso"
       }
     }
