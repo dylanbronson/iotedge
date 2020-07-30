@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
                 }
             }
 
-            var options = new ClientOptions { ModelId = "dtmi:dybronso:CapabilityModel2;1" };
+            var options = new ClientOptions { ModelId = "dtmi:com:example:Thermostat;1" };
 
             Console.WriteLine("Creating device client from connection string\n");
             var t = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
 
             if (moduleClient == null)
             {
-                Console.WriteLine("Failed to create DeviceClient!");
+                Console.WriteLine("Failed to create ModuleClient!");
             }
             else
             {
