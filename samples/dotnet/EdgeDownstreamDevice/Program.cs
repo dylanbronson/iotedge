@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
             var options = new ClientOptions { ModelId = ModelId };
 
             Console.WriteLine("Creating device client from connection string\n");
-            var t = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+            var t = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
             t.RemoteCertificateValidationCallback = (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) => true;
 
             ITransportSettings[] transportSettings = new ITransportSettings[] { t };
