@@ -129,6 +129,7 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
                 Console.WriteLine("\t{0}> Sending message: {1}, Data: [{2}]", DateTime.Now.ToLocalTime(), count, dataBuffer);
 
                 await moduleClient.SendEventAsync(eventMessage).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(15));
             }
         }
     }
