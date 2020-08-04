@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
 
         public MetadataStore(IKeyValueStore<string, string> metadataEntityStore, string edgeProductInfo)
         {
+            Log.LogInformation($"DRB - creating metadata store with eproductinfo: {edgeProductInfo}");
             this.metadataEntityStore = Preconditions.CheckNotNull(metadataEntityStore);
             this.edgeProductInfo = Preconditions.CheckNotNull(edgeProductInfo, nameof(edgeProductInfo));
         }
@@ -56,11 +57,13 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
         {
             try
             {
+                Log.LogInformation($"DRB - Try deserialize...");
                 metadata = JsonConvert.DeserializeObject<ConnectionMetadata>(entityValue);
                 return true;
             }
             catch (JsonException)
             {
+                Log.LogInformation($"DRB - Caught exception2...");
                 // If deserialization fails, assume the string is an old productInfo.
                 // We must do this only for migration purposes, since this store used to just be a productInfoStore.
                 metadata = new ConnectionMetadata(entityValue, this.edgeProductInfo);
@@ -72,6 +75,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Core
 
         public async Task SetMetadata(string id, string productInfo, Option<string> modelId)
         {
+            Log.LogInformation($"DRB - set metadata for {id} with p info : {productInfo} and modelId {modelId.HasValue}...");
             ConnectionMetadata metadata = new ConnectionMetadata(productInfo, modelId, this.edgeProductInfo);
             await this.metadataEntityStore.Put(id, JsonConvert.SerializeObject(metadata));
         }
