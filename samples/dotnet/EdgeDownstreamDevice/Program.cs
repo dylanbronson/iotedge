@@ -28,7 +28,8 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
         // Either set the DEVICE_CONNECTION_STRING environment variable with this connection string
         // or set it in the Properties/launchSettings.json.
         // static readonly string DeviceConnectionString = Environment.GetEnvironmentVariable("DEVICE_CONNECTION_STRING");
-        static readonly string MessageCountEnv = Environment.GetEnvironmentVariable("MESSAGE_COUNT");
+        // static readonly string MessageCountEnv = Environment.GetEnvironmentVariable("MESSAGE_COUNT");
+        static readonly string ModelId = Environment.GetEnvironmentVariable("ModelId");
 
         static int messageCount = 10;
 
@@ -43,15 +44,15 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
         static async Task Main()
         {
             Thread.Sleep(10000);
-            if (!string.IsNullOrWhiteSpace(MessageCountEnv))
+            /*if (!string.IsNullOrWhiteSpace(MessageCountEnv))
             {
                 if (!int.TryParse(MessageCountEnv, out messageCount))
                 {
                     Console.WriteLine("Invalid number of messages in env variable MESSAGE_COUNT. MESSAGE_COUNT set to {0}\n", messageCount);
                 }
-            }
+            }*/
 
-            var options = new ClientOptions { ModelId = "dtmi:com:example:Thermostat;1" };
+            var options = new ClientOptions { ModelId = ModelId };
 
             Console.WriteLine("Creating device client from connection string\n");
             var t = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
@@ -119,7 +120,8 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
             Random rnd = new Random();
             Console.WriteLine("Edge downstream device attempting to send {0} messages to Edge Hub...\n", messageCount);
 
-            for (int count = 0; count < messageCount; count++)
+            int count = 0;
+            while (true)
             {
                 float temperature = rnd.Next(20, 35);
                 float humidity = rnd.Next(60, 80);
@@ -130,6 +132,7 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
 
                 await moduleClient.SendEventAsync(eventMessage).ConfigureAwait(false);
                 await Task.Delay(TimeSpan.FromSeconds(15));
+                count++;
             }
         }
     }
