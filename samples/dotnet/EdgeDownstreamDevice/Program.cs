@@ -4,10 +4,12 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
     using System;
     using System.Globalization;
     using System.IO;
+    using System.Net.Security;
     using System.Security.Cryptography.X509Certificates;
     using System.Text;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
+    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
     class Program
     {
@@ -47,9 +49,11 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
                     Console.WriteLine("Invalid number of messages in env variable MESSAGE_COUNT. MESSAGE_COUNT set to {0}\n", messageCount);
                 }
             }
-
+            var t = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
+            t.RemoteCertificateValidationCallback = (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) => true;
+            
             Console.WriteLine("Creating device client from connection string\n");
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString);
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, new ITransportSettings[] { t });
 
             if (deviceClient == null)
             {
@@ -109,7 +113,8 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
             Random rnd = new Random();
             Console.WriteLine("Edge downstream device attempting to send {0} messages to Edge Hub...\n", messageCount);
 
-            for (int count = 0; count < messageCount; count++)
+            int count = 0;
+            while (true)
             {
                 float temperature = rnd.Next(20, 35);
                 float humidity = rnd.Next(60, 80);
@@ -119,6 +124,8 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
                 Console.WriteLine("\t{0}> Sending message: {1}, Data: [{2}]", DateTime.Now.ToLocalTime(), count, dataBuffer);
 
                 await deviceClient.SendEventAsync(eventMessage).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(15));
+                count++;
             }
         }
     }
