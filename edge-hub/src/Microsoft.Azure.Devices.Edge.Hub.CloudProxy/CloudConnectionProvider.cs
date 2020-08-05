@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
             {
                 AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings
                 {
-                    Pooling = true,
+                    Pooling = false,
                     MaxPoolSize = (uint)connectionPoolSize
                 }
             };
