@@ -7,9 +7,12 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
     using Microsoft.Azure.Devices.Edge.Hub.Core.Device;
     using Microsoft.Azure.Devices.Edge.Hub.Core.Identity;
     using Microsoft.Azure.Devices.Edge.Util;
+    using Microsoft.Extensions.Logging;
 
     public class ClientProvider : IClientProvider
     {
+        static readonly ILogger Log = Logger.Factory.CreateLogger<ClientProvider>();
+
         public IClient Create(IIdentity identity, IAuthenticationMethod authenticationMethod, ITransportSettings[] transportSettings, Option<string> modelId)
         {
             Preconditions.CheckNotNull(identity, nameof(identity));
@@ -23,6 +26,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
 
             if (identity is IModuleIdentity)
             {
+                Log.LogDebug($"DRB - Creating moduleClient for {identity.Id}...");
                 ModuleClient moduleClient = options.Match(
                     o => ModuleClient.Create(identity.IotHubHostName, authenticationMethod, transportSettings, o),
                     () => ModuleClient.Create(identity.IotHubHostName, authenticationMethod, transportSettings));
@@ -30,6 +34,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
             }
             else if (identity is IDeviceIdentity)
             {
+                Log.LogDebug($"DRB - Creating deviceClient for {identity.Id}...");
                 DeviceClient deviceClient = options.Match(
                     o => DeviceClient.Create(identity.IotHubHostName, authenticationMethod, transportSettings, o),
                     () => DeviceClient.Create(identity.IotHubHostName, authenticationMethod, transportSettings));
@@ -47,11 +52,13 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
 
             if (identity is IModuleIdentity)
             {
+                Log.LogDebug($"DRB - Creating moduleClient from connection string for {identity.Id}...");
                 ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(connectionString, transportSettings);
                 return new ModuleClientWrapper(moduleClient);
             }
             else if (identity is IDeviceIdentity)
             {
+                Log.LogDebug($"DRB - Creating deviceClient from connection string for {identity.Id}...");
                 DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString, transportSettings);
                 return new DeviceClientWrapper(deviceClient);
             }
@@ -69,6 +76,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.CloudProxy
                 throw new InvalidOperationException($"Invalid client identity type {identity.GetType()}. CreateFromEnvironment supports only ModuleIdentity");
             }
 
+            Log.LogDebug($"DRB - Creating moduleClient from environment for {identity.Id}...");
             ModuleClient moduleClient = await ModuleClient.CreateFromEnvironmentAsync(transportSettings);
             return new ModuleClientWrapper(moduleClient);
         }
