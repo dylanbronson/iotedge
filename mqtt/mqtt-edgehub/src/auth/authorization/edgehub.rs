@@ -1,12 +1,14 @@
 use std::any::Any;
 use std::{cell::RefCell, collections::HashMap, convert::Infallible};
 
-use crate::command::ServiceIdentity;
+use tracing::debug;
+
 use mqtt_broker::{
     auth::{Activity, Authorization, Authorizer, Connect, Operation, Publish, Subscribe},
     AuthId, ClientId, ClientInfo,
 };
-use tracing::debug;
+
+use crate::command::ServiceIdentity;
 
 #[derive(Debug, Default)]
 pub struct EdgeHubAuthorizer {
@@ -180,7 +182,6 @@ impl Authorizer for EdgeHubAuthorizer {
         let identities = update.as_ref();
         if let Some(service_identities) = identities.downcast_ref::<Vec<ServiceIdentity>>() {
             debug!("{:?}", service_identities);
-
         }
         Ok(())
     }

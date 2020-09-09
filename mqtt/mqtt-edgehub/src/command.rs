@@ -1,6 +1,7 @@
+use std::{collections::HashMap, fmt};
+
 use serde::{Deserialize, Serialize};
 use serde_json::error::Error as SerdeError;
-use std::{collections::HashMap, fmt};
 use tracing::{debug, info};
 
 use mqtt3::ReceivedPublication;
