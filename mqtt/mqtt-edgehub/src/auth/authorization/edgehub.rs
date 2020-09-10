@@ -13,7 +13,7 @@ use crate::command::ServiceIdentity;
 #[derive(Debug, Default)]
 pub struct EdgeHubAuthorizer {
     iothub_allowed_topics: RefCell<HashMap<ClientId, Vec<String>>>,
-    service_identities_cache: Vec<ServiceIdentity>,
+    service_identities_cache: HashMap<String, ServiceIdentity>,
 }
 
 impl EdgeHubAuthorizer {
@@ -96,7 +96,8 @@ impl EdgeHubAuthorizer {
             ),
             // allow authenticated clients with client_id == auth_id and accessing its own IoTHub topic
             AuthId::Identity(identity) if identity == client_id => {
-                if self.is_iothub_topic_allowed(client_id, topic) {
+                if self.is_iothub_topic_allowed(client_id, topic)
+                    && self.check_cache(client_id, topic) {
                     Authorization::Allowed
                 } else {
                     Authorization::Forbidden(
@@ -121,6 +122,11 @@ impl EdgeHubAuthorizer {
         allowed_topics
             .iter()
             .any(|allowed_topic| topic.starts_with(allowed_topic))
+    }
+
+    fn check_cache(&self, client_id: &ClientId, topic: &str) -> bool {
+        let on_behalf_of_id: &str = topic.split('/').collect::<Vec<&str>>()[2];
+        client_id.as_str() == on_behalf_of_id
     }
 }
 
@@ -182,8 +188,13 @@ impl Authorizer for EdgeHubAuthorizer {
     fn update(&mut self, update: Box<dyn Any>) -> Result<(), Self::Error> {
         let identities = update.as_ref();
         if let Some(service_identities) = identities.downcast_ref::<Vec<ServiceIdentity>>() {
-            debug!("{:?}", service_identities);
-            self.service_identities_cache = service_identities.to_vec();
+            debug!("service identities update received. Service identities: {:?}", service_identities);
+            // let m: &Vec<ServiceIdentity> = service_identities;
+            let service_identity_map: HashMap<String, ServiceIdentity> = HashMap::new();
+            for id in service_identities {
+                service_identity_map.insert(id.identity(), id.clone());
+            }
+            self.service_identities_cache = service_identity_map;
         }
         Ok(())
     }

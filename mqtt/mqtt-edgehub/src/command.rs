@@ -106,6 +106,16 @@ pub struct ServiceIdentity {
     auth_chain: Option<String>,
 }
 
+impl ServiceIdentity {
+    pub fn identity(&self) -> String {
+        self.identity
+    }
+
+    pub fn auth_chain(&self) -> Option<String> {
+        self.auth_chain
+    }
+}
+
 impl fmt::Display for ServiceIdentity {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.auth_chain {
