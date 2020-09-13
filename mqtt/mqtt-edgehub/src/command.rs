@@ -117,6 +117,15 @@ impl fmt::Display for ServiceIdentity {
     }
 }
 
+impl Clone for ServiceIdentity {
+    fn clone(&self) -> Self {
+        ServiceIdentity {
+            identity: self.identity.clone(),
+            auth_chain: self.auth_chain.clone(),
+        }
+    }
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum HandleEventError {
     #[error("failed to parse client id from message payload")]

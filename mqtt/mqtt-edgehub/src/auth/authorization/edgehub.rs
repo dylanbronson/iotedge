@@ -13,6 +13,7 @@ use crate::command::ServiceIdentity;
 #[derive(Debug, Default)]
 pub struct EdgeHubAuthorizer {
     iothub_allowed_topics: RefCell<HashMap<ClientId, Vec<String>>>,
+    service_identities_cache: Vec<ServiceIdentity>,
 }
 
 impl EdgeHubAuthorizer {
@@ -178,10 +179,11 @@ impl Authorizer for EdgeHubAuthorizer {
         Ok(auth)
     }
 
-    fn update(&self, update: Box<dyn Any>) -> Result<(), Self::Error> {
+    fn update(&mut self, update: Box<dyn Any>) -> Result<(), Self::Error> {
         let identities = update.as_ref();
         if let Some(service_identities) = identities.downcast_ref::<Vec<ServiceIdentity>>() {
             debug!("{:?}", service_identities);
+            self.service_identities_cache = service_identities.to_vec();
         }
         Ok(())
     }
