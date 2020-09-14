@@ -97,7 +97,7 @@ impl EdgeHubAuthorizer {
             // allow authenticated clients with client_id == auth_id and accessing its own IoTHub topic
             AuthId::Identity(identity) if identity == client_id => {
                 if self.is_iothub_topic_allowed(client_id, topic)
-                    && self.check_cache(client_id, topic) {
+                    && self.check_authorized_cache(client_id, topic) {
                     Authorization::Allowed
                 } else {
                     Authorization::Forbidden(
@@ -124,9 +124,36 @@ impl EdgeHubAuthorizer {
             .any(|allowed_topic| topic.starts_with(allowed_topic))
     }
 
-    fn check_cache(&self, client_id: &ClientId, topic: &str) -> bool {
-        let on_behalf_of_id: &str = topic.split('/').collect::<Vec<&str>>()[2];
-        client_id.as_str() == on_behalf_of_id
+    fn check_authorized_cache(&self, client_id: &ClientId, topic: &str) -> bool {
+        let on_behalf_of_id: &str = match topic.split('/').collect::<Vec<&str>>().get(2) {
+            Some(id) => {
+                id
+            }
+            None => {
+                return false
+            }
+        };
+        if client_id.as_str() == on_behalf_of_id {
+            self.service_identities_cache.contains_key(client_id.as_str())
+        }
+        else {
+            match self.service_identities_cache.get(on_behalf_of_id) {
+                Some(service_identity) => {
+                    match service_identity.auth_chain() {
+                        Some(auth_chain) => {
+                            // if auth_chain for on_behalf_of_id contains client_id, then on_behalf_of_id is a descendant of client_id
+                            auth_chain.contains(client_id.as_str())
+                        }
+                        None => {
+                            false
+                        }
+                    }
+                }
+                None => { 
+                    false 
+                }
+            }
+        }
     }
 }
 
@@ -189,8 +216,7 @@ impl Authorizer for EdgeHubAuthorizer {
         let identities = update.as_ref();
         if let Some(service_identities) = identities.downcast_ref::<Vec<ServiceIdentity>>() {
             debug!("service identities update received. Service identities: {:?}", service_identities);
-            // let m: &Vec<ServiceIdentity> = service_identities;
-            let service_identity_map: HashMap<String, ServiceIdentity> = HashMap::new();
+            let mut service_identity_map: HashMap<String, ServiceIdentity> = HashMap::new();
             for id in service_identities {
                 service_identity_map.insert(id.identity(), id.clone());
             }

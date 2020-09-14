@@ -108,11 +108,11 @@ pub struct ServiceIdentity {
 
 impl ServiceIdentity {
     pub fn identity(&self) -> String {
-        self.identity
+        self.identity.clone()
     }
 
     pub fn auth_chain(&self) -> Option<String> {
-        self.auth_chain
+        self.auth_chain.clone()
     }
 }
 
