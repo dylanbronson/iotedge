@@ -27,6 +27,10 @@ where
 
         self.0.authorize(activity)
     }
+
+    fn update(&mut self, update: Box<dyn std::any::Any>) -> Result<(), Self::Error> {
+        self.0.update(update)
+    }
 }
 
 #[cfg(test)]

@@ -80,6 +80,7 @@ where
                             }
                         }
                         SystemEvent::AuthorizationUpdate(update) => {
+                            debug!("DRB - Received an auth update! Trying to update authorizer");
                             if let Err(e) = self.authorizer.update(update) {
                                 error!(message = "an error occurred while updating authorization info", error = %e);
                                 // TODO return an error instead?

@@ -243,6 +243,7 @@ impl Authorizer for EdgeHubAuthorizer {
     }
 
     fn update(&mut self, update: Box<dyn Any>) -> Result<(), Self::Error> {
+        debug!("DRB - Trying to update service identities");
         if let Ok(service_identities) = update.downcast::<Vec<ServiceIdentity>>() {
             debug!(
                 "service identities update received. Service identities: {:?}",
@@ -253,6 +254,8 @@ impl Authorizer for EdgeHubAuthorizer {
                 .into_iter()
                 .map(|id| (id.identity().into(), id))
                 .collect();
+        } else {
+            debug!("DRB - service update failed. Could not downcast update");
         }
         Ok(())
     }
