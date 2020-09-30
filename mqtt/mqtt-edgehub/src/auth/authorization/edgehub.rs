@@ -118,9 +118,11 @@ impl EdgeHubAuthorizer {
             .entry(client_id.clone())
             .or_insert_with(|| allowed_iothub_topic(&client_id));
 
-        allowed_topics
+        let x = allowed_topics
             .iter()
-            .any(|allowed_topic| topic.starts_with(allowed_topic))
+            .any(|allowed_topic| topic.starts_with(allowed_topic));
+        debug!("DRB - is_iothub_topic_allowed: {}", x);
+        x
     }
 
     fn get_on_behalf_of_id(topic: &str) -> Option<ClientId> {
@@ -157,7 +159,12 @@ impl EdgeHubAuthorizer {
             None => {
                 // If there is no on_behalf_of_id, we are dealing with a legacy topic
                 // The client_id must still be in the identities cache
-                self.service_identities_cache.contains_key(client_id)
+                let x = self.service_identities_cache.contains_key(client_id);
+                debug!(
+                    "DRB - checking cache. does cache contain key {}? {}",
+                    client_id, x
+                );
+                x
             }
         }
     }
@@ -192,6 +199,7 @@ fn allowed_iothub_topic(client_id: &ClientId) -> Vec<String> {
             panic!("ClientId cannot have more than deviceId and moduleId");
         }
     };
+    debug!("DRB - client_id: {} and x is {}", client_id, x);
     vec![
         format!("$edgehub/{}/messages/events", client_id),
         format!("$edgehub/{}/messages/c2d/post", client_id),
