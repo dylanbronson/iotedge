@@ -29,6 +29,7 @@ where
     }
 
     fn update(&mut self, update: Box<dyn std::any::Any>) -> Result<(), Self::Error> {
+        debug!("DRB - called local auth UPDATE - calling inner auth update...");
         self.0.update(update)
     }
 }

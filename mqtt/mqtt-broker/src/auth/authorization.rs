@@ -1,6 +1,7 @@
 use std::{any::Any, convert::Infallible, error::Error as StdError};
 
 use mqtt3::proto;
+use tracing::debug;
 
 use crate::ClientInfo;
 
@@ -13,6 +14,7 @@ pub trait Authorizer {
     fn authorize(&self, activity: Activity) -> Result<Authorization, Self::Error>;
 
     fn update(&mut self, _update: Box<dyn Any>) -> Result<(), Self::Error> {
+        debug!("DRB - Updating with DEFAULT auth");
         Ok(())
     }
 }
