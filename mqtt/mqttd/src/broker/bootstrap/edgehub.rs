@@ -19,7 +19,7 @@ use tokio::{
     task::JoinHandle,
     time,
 };
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 
 use mqtt_bridge::BridgeController;
 use mqtt_broker::{
@@ -86,6 +86,7 @@ where
     Z: Authorizer + Send + 'static,
     F: Future<Output = ()> + Unpin,
 {
+    debug!("DRB - adding log line for sanity");
     let broker_handle = broker.handle();
 
     let make_processor = MakeEdgeHubPacketProcessor::new_default(broker_handle.clone());
