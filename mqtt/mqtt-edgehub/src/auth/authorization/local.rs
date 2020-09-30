@@ -1,6 +1,7 @@
 use std::error::Error as StdError;
 
 use mqtt_broker::auth::{Activity, Authorization, Authorizer};
+use tracing::debug;
 
 pub struct LocalAuthorizer<Z>(Z);
 
