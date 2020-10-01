@@ -141,6 +141,7 @@ impl std::fmt::Debug for Connect {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Connect")
             .field("username", &self.username)
+            .field("password", &self.password)
             .field("will", &self.will)
             .field("client_id", &self.client_id)
             .field("keep_alive", &self.keep_alive)
