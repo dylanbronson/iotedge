@@ -12,7 +12,7 @@ namespace C2DModule
     {
         static async Task Main(string[] args)
         {
-            string cxnString = "HostName=dybronso-iot-hub.azure-devices.net;DeviceId=leafForModuleDMToLeafTest;SharedAccessKey=j/XPe4vSzaBMG2vv7qjPM8lOy66vQ+ACKXgfyV45MzA=";
+            string cxnString = "HostName=dybronso-iot-hub.azure-devices.net;DeviceId=leafForModuleDMToLeafTest;SharedAccessKey=j/XPe4vSzaBMG2vv7qjPM8lOy66vQ+ACKXgfyV45MzA=;GatewayHostName=localhost";
             var t = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
             t.RemoteCertificateValidationCallback = (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) => true;
             var ts = new ITransportSettings[] { t };
