@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
         //
         // Either set the DEVICE_CONNECTION_STRING environment variable with this connection string
         // or set it in the Properties/launchSettings.json.
-        static readonly string DeviceConnectionString = "HostName=dybronso-iot-hub.azure-devices.net;DeviceId=dybronso-broker-leaf-1;SharedAccessKey=vgxOc7wg/Ph1aczIcIuCqCfhOnW0Tizn78THeprWcfk=;GatewayHostName=dybronso-test-vm";
+        static readonly string DeviceConnectionString = "HostName=dybronso-iot-hub.azure-devices.net;DeviceId=dybronso-broker-leaf-1;SharedAccessKey=vgxOc7wg/Ph1aczIcIuCqCfhOnW0Tizn78THeprWcfk=;GatewayHostName=localhost";
         // static readonly string MessageCountEnv = Environment.GetEnvironmentVariable("MESSAGE_COUNT");
 
         // static int messageCount = 10;
