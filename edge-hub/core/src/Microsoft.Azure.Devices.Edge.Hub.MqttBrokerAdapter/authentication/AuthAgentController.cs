@@ -29,12 +29,14 @@ namespace Microsoft.Azure.Devices.Edge.Hub.MqttBrokerAdapter
             this.clientCredentialsFactory = Preconditions.CheckNotNull(clientCredentialsFactory, nameof(clientCredentialsFactory));
             this.systemComponentIdProvider = Preconditions.CheckNotNull(systemComponentIdProvider, nameof(systemComponentIdProvider));
             this.metadataStore = Preconditions.CheckNotNull(metadataStore, nameof(metadataStore));
+            Events.PrintMe("metadata store set in authAgentController. AuthAgentController created");
         }
 
         [HttpPost]
         [Produces("application/json")]
         public async Task<JsonResult> HandleAsync([FromBody] AuthRequest request)
         {
+            Events.PrintMe($"HandleAsync called. request: {request}");
             if (request == null)
             {
                 Events.ErrorDecodingPayload();
@@ -150,6 +152,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.MqttBrokerAdapter
 
         static object GetAuthResult(bool isAuthenticated, Option<IClientCredentials> credentials, IMetadataStore metadataStore)
         {
+            Events.PrintMe("Inside GetAuthResult");
             // note, that if authenticated, then these values are present, and defaults never apply
             var id = credentials.Map(c => $"{c.Identity.IotHubHostname}/{c.Identity.Id}").GetOrElse("anonymous");
 
@@ -223,6 +226,8 @@ namespace Microsoft.Azure.Devices.Edge.Hub.MqttBrokerAdapter
                 InvalidCredentials,
             }
 
+
+            public static void PrintMe(string printMe) => Log.LogInformation($"DRB - {printMe}");
             public static void AuthSucceeded(string id) => Log.LogInformation((int)EventIds.AuthSucceeded, "AUTH succeeded {0}", id);
             public static void AuthFailed(string id) => Log.LogWarning((int)EventIds.AuthFailed, "AUTH failed {0}", id);
             public static void ErrorDecodingPayload() => Log.LogWarning((int)EventIds.ErrorDecodingPayload, "Error decoding AUTH request, invalid JSON structure");
