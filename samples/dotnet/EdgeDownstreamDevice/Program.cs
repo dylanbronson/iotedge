@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
             var t = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
             t.RemoteCertificateValidationCallback = (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) => true;
             var ts = new ITransportSettings[] { t };
-            ClientOptions o = new ClientOptions { ModelId = "dtmi:test:modelId;1" };
+            ClientOptions o = new ClientOptions();
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, ts, o);
 
             if (deviceClient == null)
