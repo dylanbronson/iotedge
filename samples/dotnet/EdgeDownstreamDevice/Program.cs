@@ -41,7 +41,9 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
             InstallCACert();
 
             Console.WriteLine("Creating device client from connection string\n");
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString);
+            TransportType t = TransportType.Mqtt;
+            ClientOptions o = new ClientOptions { ModelId = "dtmi:test:modelId;1" };
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, t, o);
 
             if (deviceClient == null)
             {
