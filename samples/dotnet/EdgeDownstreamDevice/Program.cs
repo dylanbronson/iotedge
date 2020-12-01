@@ -4,10 +4,12 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
     using System;
     using System.Globalization;
     using System.IO;
+    using System.Net.Security;
     using System.Security.Cryptography.X509Certificates;
     using System.Text;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
+    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
     class Program
     {
@@ -41,9 +43,11 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
             InstallCACert();
 
             Console.WriteLine("Creating device client from connection string\n");
-            TransportType t = TransportType.Mqtt;
+            var t = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
+            t.RemoteCertificateValidationCallback = (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) => true;
+            var ts = new ITransportSettings[] { t };
             ClientOptions o = new ClientOptions { ModelId = "dtmi:test:modelId;1" };
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, t, o);
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, ts, o);
 
             if (deviceClient == null)
             {
