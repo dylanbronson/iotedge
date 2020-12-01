@@ -23,10 +23,10 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
         //
         // Either set the DEVICE_CONNECTION_STRING environment variable with this connection string
         // or set it in the Properties/launchSettings.json.
-        static readonly string DeviceConnectionString = Environment.GetEnvironmentVariable("DEVICE_CONNECTION_STRING");
-        static readonly string MessageCountEnv = Environment.GetEnvironmentVariable("MESSAGE_COUNT");
+        static readonly string DeviceConnectionString = "HostName=dybronso-iot-hub.azure-devices.net;DeviceId=dybronso-broker-leaf-1;SharedAccessKey=vgxOc7wg/Ph1aczIcIuCqCfhOnW0Tizn78THeprWcfk=;GatewayHostName=dybronso-test-vm";
+        // static readonly string MessageCountEnv = Environment.GetEnvironmentVariable("MESSAGE_COUNT");
 
-        static int messageCount = 10;
+        // static int messageCount = 10;
 
         /// <summary>
         /// First install any CA certificate provided by the user to connect to the Edge device.
@@ -40,14 +40,6 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
         {
             InstallCACert();
 
-            if (!string.IsNullOrWhiteSpace(MessageCountEnv))
-            {
-                if (!int.TryParse(MessageCountEnv, out messageCount))
-                {
-                    Console.WriteLine("Invalid number of messages in env variable MESSAGE_COUNT. MESSAGE_COUNT set to {0}\n", messageCount);
-                }
-            }
-
             Console.WriteLine("Creating device client from connection string\n");
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString);
 
@@ -57,7 +49,7 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
             }
             else
             {
-                SendEvents(deviceClient, messageCount).Wait();
+                SendEvents(deviceClient).Wait();
             }
 
             Console.WriteLine("Exiting!\n");
@@ -104,12 +96,13 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
         /// to the IoT Edge runtime. The number of messages to be sent is determined
         /// by environment variable MESSAGE_COUNT.
         /// </summary>
-        static async Task SendEvents(DeviceClient deviceClient, int messageCount)
+        static async Task SendEvents(DeviceClient deviceClient)
         {
             Random rnd = new Random();
-            Console.WriteLine("Edge downstream device attempting to send {0} messages to Edge Hub...\n", messageCount);
+            Console.WriteLine("Edge downstream device attempting to send messages to Edge Hub...\n");
 
-            for (int count = 0; count < messageCount; count++)
+            int count = 0;
+            while (true)
             {
                 float temperature = rnd.Next(20, 35);
                 float humidity = rnd.Next(60, 80);
@@ -119,6 +112,8 @@ namespace Microsoft.Azure.Devices.Edge.Samples.EdgeDownstreamDevice
                 Console.WriteLine("\t{0}> Sending message: {1}, Data: [{2}]", DateTime.Now.ToLocalTime(), count, dataBuffer);
 
                 await deviceClient.SendEventAsync(eventMessage).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(5));
+                count++;
             }
         }
     }
