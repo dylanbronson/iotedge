@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.MqttBrokerAdapter
         readonly IUsernameParser usernameParser;
         readonly IClientCredentialsFactory clientCredentialsFactory;
         readonly ISystemComponentIdProvider systemComponentIdProvider;
-        readonly IMetadataStore metadataStore;
+        // readonly IMetadataStore metadataStore;
 
         public AuthAgentController(IAuthenticator authenticator, IUsernameParser usernameParser, IClientCredentialsFactory clientCredentialsFactory, ISystemComponentIdProvider systemComponentIdProvider)
         {
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.MqttBrokerAdapter
                                     async creds => (await this.AuthenticateAsync(creds), Option.Some(creds)),
                                     () => Task.FromResult((false, Option.None<IClientCredentials>())));
 
-                return this.Json(GetAuthResult(isAuthenticated, credentials));//, this.metadataStore));
+                return this.Json(GetAuthResult(isAuthenticated, credentials)); //, this.metadataStore));
             }
             catch (Exception e)
             {
@@ -225,7 +225,6 @@ namespace Microsoft.Azure.Devices.Edge.Hub.MqttBrokerAdapter
                 InvalidUsernameFormat,
                 InvalidCredentials,
             }
-
 
             public static void PrintMe(string printMe) => Log.LogInformation($"DRB - {printMe}");
             public static void AuthSucceeded(string id) => Log.LogInformation((int)EventIds.AuthSucceeded, "AUTH succeeded {0}", id);
