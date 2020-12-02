@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.MqttBrokerAdapter
                                     async creds => (await this.AuthenticateAsync(creds), Option.Some(creds)),
                                     () => Task.FromResult((false, Option.None<IClientCredentials>())));
 
-                return this.Json(GetAuthResult(isAuthenticated, credentials, this.metadataStore));
+                return this.Json(GetAuthResult(isAuthenticated, credentials));//, this.metadataStore));
             }
             catch (Exception e)
             {
