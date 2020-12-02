@@ -159,12 +159,13 @@ namespace Microsoft.Azure.Devices.Edge.Hub.MqttBrokerAdapter
             if (isAuthenticated)
             {
                 Events.AuthSucceeded(id);
-                credentials.ForEach(c =>
-                {
-                    Events.PrintMe($"credentials found. Adding identity {c.Identity.Id} to metadataStore");
-                    metadataStore.SetMetadata(c.Identity.Id, c.ProductInfo, c.ModelId);
-                },
-                () => Events.PrintMe("No credentials found :( "));
+                credentials.ForEach(
+                    c =>
+                    {
+                        Events.PrintMe($"credentials found. Adding identity {c.Identity.Id} to metadataStore");
+                        metadataStore.SetMetadata(c.Identity.Id, c.ProductInfo, c.ModelId);
+                    },
+                    () => Events.PrintMe("No credentials found :( "));
                 return new
                 {
                     result = AuthAgentConstants.Authenticated,
