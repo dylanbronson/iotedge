@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-namespace TestResultCoordinator.Reports
+namespace TestResultCoordinator.Reports.Deployment
 {
     using System;
     using System.Collections.Generic;

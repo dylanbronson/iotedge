@@ -1,32 +1,28 @@
 // Copyright (c) Microsoft. All rights reserved.
-namespace TestResultCoordinator.Reports
+namespace TestResultCoordinator.Reports.Deployment
 {
     using Microsoft.Azure.Devices.Edge.ModuleUtil;
     using Microsoft.Azure.Devices.Edge.Util;
 
-    class CountingReportMetadata : TestReportMetadataBase, ITestReportMetadata
+    class DeploymentTestReportMetadata : TestReportMetadataBase, ITestReportMetadata
     {
-        public CountingReportMetadata(
+        public DeploymentTestReportMetadata(
             string testDescription,
             string expectedSource,
-            string actualSource,
-            TestOperationResultType testOperationResultType,
-            TestReportType testReportType)
+            string actualSource)
             : base(testDescription)
         {
             this.ExpectedSource = Preconditions.CheckNonWhiteSpace(expectedSource, nameof(expectedSource));
             this.ActualSource = Preconditions.CheckNonWhiteSpace(actualSource, nameof(actualSource));
-            this.TestOperationResultType = testOperationResultType;
-            this.TestReportType = testReportType;
         }
 
         public string ExpectedSource { get; }
 
         public string ActualSource { get; }
 
-        public override TestOperationResultType TestOperationResultType { get; }
+        public override TestReportType TestReportType => TestReportType.DeploymentTestReport;
 
-        public override TestReportType TestReportType { get; }
+        public override TestOperationResultType TestOperationResultType => TestOperationResultType.Deployment;
 
         public string[] ResultSources => new string[] { this.ExpectedSource, this.ActualSource };
 

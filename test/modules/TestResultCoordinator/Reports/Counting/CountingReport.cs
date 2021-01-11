@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-namespace TestResultCoordinator.Reports
+namespace TestResultCoordinator.Reports.Counting
 {
     using System.Collections.Generic;
     using Microsoft.Azure.Devices.Edge.ModuleUtil;

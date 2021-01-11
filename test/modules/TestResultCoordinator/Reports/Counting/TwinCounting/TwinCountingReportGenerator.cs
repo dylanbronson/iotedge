@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-namespace TestResultCoordinator.Reports
+namespace TestResultCoordinator.Reports.Counting.TwinCounting
 {
     using System;
     using System.Collections.Generic;

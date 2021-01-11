@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-namespace TestResultCoordinator.Reports
+namespace TestResultCoordinator.Reports.Counting.TwinCounting
 {
     using System.Collections.ObjectModel;
     using Microsoft.Azure.Devices.Edge.Util;

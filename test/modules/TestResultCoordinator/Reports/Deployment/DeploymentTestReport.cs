@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-namespace TestResultCoordinator.Reports
+namespace TestResultCoordinator.Reports.Deployment
 {
     using System.Collections.Generic;
     using Microsoft.Azure.Devices.Edge.ModuleUtil;

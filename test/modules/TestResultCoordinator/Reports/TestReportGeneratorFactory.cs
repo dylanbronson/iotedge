@@ -6,6 +6,9 @@ namespace TestResultCoordinator.Reports
     using Microsoft.Azure.Devices.Edge.ModuleUtil;
     using Microsoft.Azure.Devices.Edge.ModuleUtil.NetworkController;
     using Microsoft.Azure.Devices.Edge.Util;
+    using TestResultCoordinator.Reports.Counting;
+    using TestResultCoordinator.Reports.Counting.TwinCounting;
+    using TestResultCoordinator.Reports.Deployment;
     using TestResultCoordinator.Reports.DirectMethod;
     using TestResultCoordinator.Reports.EdgeHubRestartTest;
     using TestResultCoordinator.Storage;
